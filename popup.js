@@ -261,9 +261,9 @@ class CursorAccountManager {
     document.getElementById("cookiesInput").value = "";
     document.getElementById("accountNameInput").value = "";
     document.getElementById("cookiesInput").focus();
-    
+
     // Clear any existing duplicate warnings
-    const existingWarning = document.querySelector('.duplicate-warning');
+    const existingWarning = document.querySelector(".duplicate-warning");
     if (existingWarning) {
       existingWarning.remove();
     }
@@ -272,7 +272,7 @@ class CursorAccountManager {
   hideModal() {
     document.getElementById("addAccountModal").style.display = "none";
     // Clear any duplicate warnings
-    const existingWarning = document.querySelector('.duplicate-warning');
+    const existingWarning = document.querySelector(".duplicate-warning");
     if (existingWarning) {
       existingWarning.remove();
     }
@@ -281,14 +281,14 @@ class CursorAccountManager {
   // Show duplicate account warning inside modal
   showDuplicateWarning(existingAccount) {
     // Remove any existing warning
-    const existingWarning = document.querySelector('.duplicate-warning');
+    const existingWarning = document.querySelector(".duplicate-warning");
     if (existingWarning) {
       existingWarning.remove();
     }
 
     // Create warning element
-    const warning = document.createElement('div');
-    warning.className = 'duplicate-warning';
+    const warning = document.createElement("div");
+    warning.className = "duplicate-warning";
     warning.style.cssText = `
       background: #fee2e2;
       border: 1px solid #fca5a5;
@@ -300,7 +300,9 @@ class CursorAccountManager {
     `;
     warning.innerHTML = `
       <strong>⚠️ Account Already Exists</strong><br>
-      This account is already saved as: <strong>${existingAccount.email || existingAccount.name}</strong>
+      This account is already saved as: <strong>${
+        existingAccount.email || existingAccount.name
+      }</strong>
     `;
 
     // Insert warning after the textarea
