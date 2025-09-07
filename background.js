@@ -91,6 +91,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           });
           break;
 
+        case "scanDownloadsFolder":
+          // Scan Downloads folder for account files
+          const downloadFiles = await accountService.scanDownloadsForAccounts();
+          sendResponse({ success: true, data: downloadFiles });
+          break;
+
         case "importAccountJSON":
           const accountName = await accountService.importAccountFromJSON(
             request.jsonText,

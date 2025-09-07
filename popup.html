@@ -39,6 +39,12 @@
         <button id="exportCurrentBtn" class="btn btn-secondary">
           💾 Export Current
         </button>
+        <button id="importFromDownloadsBtn" class="btn btn-secondary">
+          📁 Import Files
+        </button>
+        <button id="importFolderBtn" class="btn btn-secondary">
+          📂 Import Folder
+        </button>
       </div>
 
       <!-- Accounts List -->
@@ -56,7 +62,9 @@
           <div class="empty-icon">📁</div>
           <p>No accounts saved yet</p>
           <p class="hint">
-            Click "Add Current Session" to save your current Cursor account
+            Click "Add Account" to paste cookies, "Import Files" to select
+            multiple files, or "Import Folder" to import entire
+            Downloads/cursor_accounts/ folder
           </p>
         </div>
       </div>
@@ -129,6 +137,20 @@
 
     <!-- Hidden file inputs -->
     <input id="fileInput" type="file" accept=".json" style="display: none" />
+    <input
+      id="downloadsFileInput"
+      type="file"
+      accept=".json"
+      multiple
+      style="display: none"
+    />
+    <input
+      id="folderInput"
+      type="file"
+      webkitdirectory
+      directory
+      style="display: none"
+    />
 
     <script src="popup.js"></script>
   </body>

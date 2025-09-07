@@ -32,6 +32,30 @@ class CursorAccountManager {
         this.exportCurrentAccount();
       });
 
+    // Import from Downloads button
+    document
+      .getElementById("importFromDownloadsBtn")
+      .addEventListener("click", () => {
+        this.importFromDownloads();
+      });
+
+    // Import Folder button
+    document.getElementById("importFolderBtn").addEventListener("click", () => {
+      this.importFromFolder();
+    });
+
+    // Downloads file input change
+    document
+      .getElementById("downloadsFileInput")
+      .addEventListener("change", (e) => {
+        this.handleDownloadsImport(e.target.files);
+      });
+
+    // Folder input change
+    document.getElementById("folderInput").addEventListener("change", (e) => {
+      this.handleFolderImport(e.target.files);
+    });
+
     // Refresh button
     document.getElementById("refreshBtn").addEventListener("click", () => {
       this.loadAccounts();
@@ -628,6 +652,124 @@ class CursorAccountManager {
     setTimeout(() => {
       notification.style.display = "none";
     }, 3000);
+  }
+
+  // Import from Downloads folder
+  importFromDownloads() {
+    document.getElementById("downloadsFileInput").click();
+  }
+
+  // Import from folder
+  importFromFolder() {
+    document.getElementById("folderInput").click();
+  }
+
+  // Handle multiple file import from Downloads
+  async handleDownloadsImport(files) {
+    await this.processFileImport(files, "downloadsFileInput");
+  }
+
+  // Handle folder import
+  async handleFolderImport(files) {
+    // Filter only JSON files from the folder
+    const jsonFiles = Array.from(files).filter((file) =>
+      file.name.toLowerCase().endsWith(".json")
+    );
+
+    if (jsonFiles.length === 0) {
+      this.showNotification(
+        "No JSON files found in the selected folder",
+        "error"
+      );
+      return;
+    }
+
+    this.showNotification(
+      `Found ${jsonFiles.length} JSON files in folder, importing...`,
+      "info"
+    );
+    await this.processFileImport(jsonFiles, "folderInput");
+  }
+
+  // Process file import (shared by both methods)
+  async processFileImport(files, inputId) {
+    if (!files || files.length === 0) return;
+
+    let importedCount = 0;
+    let skippedCount = 0;
+    let errorCount = 0;
+
+    this.showLoading(true);
+
+    try {
+      for (const file of files) {
+        try {
+          // Skip non-JSON files
+          if (!file.name.toLowerCase().endsWith(".json")) {
+            continue;
+          }
+
+          const text = await file.text();
+          const data = JSON.parse(text);
+
+          // Check if it's a valid account file
+          if (data.account || Array.isArray(data)) {
+            // Check for duplicates
+            const cookies = data.account ? data.account.cookies : data;
+            const existingAccount = await this.findExistingAccount(cookies);
+
+            if (existingAccount) {
+              skippedCount++;
+              console.log(`Skipped duplicate: ${file.name}`);
+              continue;
+            }
+
+            // Import the account
+            const response = await chrome.runtime.sendMessage({
+              type: "importAccountJSON",
+              jsonText: text,
+              customName: null,
+            });
+
+            if (response.success) {
+              importedCount++;
+              console.log(`Imported: ${file.name} as ${response.data}`);
+            } else {
+              errorCount++;
+              console.error(`Failed to import: ${file.name}`, response.error);
+            }
+          } else {
+            errorCount++;
+            console.log(`Invalid format: ${file.name}`);
+          }
+        } catch (error) {
+          console.error("Error importing file:", file.name, error);
+          errorCount++;
+        }
+      }
+
+      // Show detailed results
+      let message = `Import completed: ${importedCount} imported`;
+      if (skippedCount > 0) {
+        message += `, ${skippedCount} skipped (duplicates)`;
+      }
+      if (errorCount > 0) {
+        message += `, ${errorCount} errors`;
+      }
+
+      this.showNotification(message, importedCount > 0 ? "success" : "info");
+
+      if (importedCount > 0) {
+        await this.loadAccounts();
+      }
+    } catch (error) {
+      console.error("Error during bulk import:", error);
+      this.showNotification("Error importing files", "error");
+    } finally {
+      this.showLoading(false);
+      // Clear the file input
+      document.getElementById(inputId).value = "";
+    }
   }
 
   escapeHtml(text) {

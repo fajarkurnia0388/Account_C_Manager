@@ -58,6 +58,20 @@ Ekstensi Chrome yang memungkinkan Anda mengelola beberapa akun Cursor dan berali
 3. Klik "Export Current"
 4. Akun akan disimpan ke Downloads/cursor_accounts/
 
+**Metode 3: Impor Files**
+
+1. Klik ikon ekstensi
+2. Klik "Import Files"
+3. Pilih satu atau beberapa file akun dari Downloads/cursor_accounts/
+4. Ekstensi akan mengimpor semua akun yang valid dan melewati duplikat
+
+**Metode 4: Impor Seluruh Folder**
+
+1. Klik ikon ekstensi
+2. Klik "Import Folder"
+3. Pilih folder Downloads/cursor_accounts/
+4. Ekstensi akan otomatis mengimpor semua file JSON di dalam folder
+
 ### Beralih Akun
 
 1. Klik ikon ekstensi

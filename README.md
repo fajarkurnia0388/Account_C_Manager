@@ -58,6 +58,20 @@ A Chrome extension that allows you to manage multiple Cursor accounts and switch
 3. Click "Export Current"
 4. Account will be saved to Downloads/cursor_accounts/
 
+**Method 3: Import Files**
+
+1. Click the extension icon
+2. Click "Import Files"
+3. Select one or multiple account files from Downloads/cursor_accounts/
+4. Extension will import all valid accounts and skip duplicates
+
+**Method 4: Import Entire Folder**
+
+1. Click the extension icon
+2. Click "Import Folder"
+3. Select the Downloads/cursor_accounts/ folder
+4. Extension will automatically import all JSON files in the folder
+
 ### Switching Accounts
 
 1. Click the extension icon

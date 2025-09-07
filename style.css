@@ -132,9 +132,18 @@ body {
 /* Controls Section */
 .controls-section {
   padding: 16px;
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 8px;
   border-bottom: 1px solid var(--border-color);
+}
+
+.controls-section .btn {
+  font-size: 12px;
+  padding: 8px 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* Buttons */

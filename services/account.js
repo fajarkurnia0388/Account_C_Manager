@@ -375,13 +375,81 @@ class AccountService {
       await this.upsert(name, cookies);
       await this.saveAccountInfo(name, email, status);
 
-      // Export to file
-      await this.exportAccountToFile(name);
+      // Export to file (only if not already from file)
+      if (!data.account) {
+        await this.exportAccountToFile(name);
+      }
 
       return name;
     } catch (error) {
       console.error("Import error:", error);
       throw error;
+    }
+  }
+
+  // Scan Downloads folder for account files
+  async scanDownloadsForAccounts() {
+    try {
+      // Request permission to access downloads
+      const hasPermission = await new Promise((resolve) => {
+        chrome.permissions.contains(
+          {
+            permissions: ["downloads"],
+          },
+          resolve
+        );
+      });
+
+      if (!hasPermission) {
+        console.log("Downloads permission not available");
+        return [];
+      }
+
+      // Search for account files in Downloads/cursor_accounts/
+      const downloads = await new Promise((resolve, reject) => {
+        chrome.downloads.search(
+          {
+            filenameRegex: "cursor_accounts/.*\\.json$",
+            exists: true,
+          },
+          (results) => {
+            if (chrome.runtime.lastError) {
+              reject(chrome.runtime.lastError);
+            } else {
+              resolve(results);
+            }
+          }
+        );
+      });
+
+      console.log("Found download files:", downloads.length);
+      return downloads;
+    } catch (error) {
+      console.error("Error scanning downloads:", error);
+      return [];
+    }
+  }
+
+  // Load accounts from Downloads folder
+  async loadAccountsFromDownloads() {
+    try {
+      const downloadFiles = await this.scanDownloadsForAccounts();
+      let importedCount = 0;
+
+      for (const file of downloadFiles) {
+        try {
+          // Read file content (this is limited by browser security)
+          // We can only suggest to user to manually import these files
+          console.log("Found account file:", file.filename);
+        } catch (error) {
+          console.error("Error reading file:", file.filename, error);
+        }
+      }
+
+      return importedCount;
+    } catch (error) {
+      console.error("Error loading from downloads:", error);
+      return 0;
     }
   }
 }
