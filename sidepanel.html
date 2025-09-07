@@ -2,54 +2,27 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <title>Cursor Account Manager</title>
+    <title>Cursor Account Manager - Sidebar</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="sidepanel.css" />
   </head>
   <body>
-    <div id="app">
+    <div id="sidebar-app">
       <!-- Header -->
-      <div class="header">
+      <div class="sidebar-header">
         <div class="title">
           <span class="icon">👤</span>
-          <h2>Cursor Account Manager</h2>
+          <h2>Cursor Accounts</h2>
         </div>
         <div class="header-actions">
-          <button
-            id="sidebarModeToggle"
-            class="icon-btn"
-            title="Toggle Sidebar Mode"
-          >
-            📌
-          </button>
           <button id="darkModeToggle" class="icon-btn" title="Toggle Dark Mode">
             🌙
           </button>
           <button id="refreshBtn" class="icon-btn" title="Refresh">🔄</button>
-          <!-- Debug/Settings button (hidden by default) -->
-          <button
-            id="debugToggle"
-            class="icon-btn"
-            title="Debug/Settings"
-            style="display: none"
-          >
-            ⚙️
+          <button id="openPopupBtn" class="icon-btn" title="Open Full Manager">
+            🔗
           </button>
         </div>
-      </div>
-
-      <!-- Debug Panel (hidden by default) -->
-      <div id="debugPanel" class="debug-panel" style="display: none">
-        <h4>Debug & Maintenance</h4>
-        <div class="debug-actions">
-          <button id="showStoredDataBtn" class="btn btn-secondary">
-            📊 Show Stored Data
-          </button>
-          <button id="clearAllDataBtn" class="btn btn-danger">
-            🗑️ Clear All Data
-          </button>
-        </div>
-        <div id="debugOutput" class="debug-output"></div>
       </div>
 
       <!-- Current Account Section -->
@@ -57,52 +30,45 @@
         <div class="current-label">Active Account</div>
         <div class="current-account" id="currentAccount">
           <span class="account-icon">🔴</span>
-          <span class="account-name">Not logged in</span>
+          <div class="account-details">
+            <span class="account-name">Not logged in</span>
+            <span class="account-status"></span>
+          </div>
         </div>
       </div>
 
-      <!-- Main Controls -->
-      <div class="controls-section">
-        <button id="addAccountBtn" class="btn btn-primary">
+      <!-- Quick Actions -->
+      <div class="quick-actions">
+        <button id="addAccountBtn" class="btn btn-primary btn-sm">
           ➕ Add Account
         </button>
-        <button id="exportCurrentBtn" class="btn btn-secondary">
-          💾 Export Current
-        </button>
-        <button id="importFromDownloadsBtn" class="btn btn-secondary">
-          📁 Import Files
-        </button>
-        <button id="importFolderBtn" class="btn btn-secondary">
-          📂 Import Folder
+        <button id="exportCurrentBtn" class="btn btn-secondary btn-sm">
+          💾 Export
         </button>
       </div>
 
       <!-- Accounts List -->
       <div class="accounts-section">
         <div class="section-header">
-          <h3>Saved Accounts</h3>
-          <span class="accounts-count" id="accountsCount">(0)</span>
+          <h3>Accounts</h3>
+          <span id="accountsCount" class="count">(0)</span>
         </div>
 
-        <div id="accountsList" class="accounts-list">
+        <div id="accountsList" class="sidebar-accounts-list">
           <!-- Accounts will be populated here -->
         </div>
 
         <div id="noAccounts" class="empty-state" style="display: none">
           <div class="empty-icon">📁</div>
-          <p>No accounts saved yet</p>
-          <p class="hint">
-            Click "Add Account" to paste cookies, "Import Files" to select
-            multiple files, or "Import Folder" to import entire
-            Downloads/cursor_accounts/ folder
-          </p>
+          <p>No accounts</p>
+          <p class="hint">Click ➕ to add</p>
         </div>
       </div>
 
       <!-- Loading Overlay -->
       <div id="loadingOverlay" class="loading-overlay" style="display: none">
         <div class="spinner"></div>
-        <p>Processing...</p>
+        <p>Loading...</p>
       </div>
 
       <!-- Notification -->
@@ -112,18 +78,17 @@
     </div>
 
     <!-- Account Item Template -->
-    <template id="accountTemplate">
-      <div class="account-item" data-account="">
+    <template id="sidebarAccountTemplate">
+      <div class="sidebar-account-item" data-account="">
         <div class="account-info">
           <div class="account-avatar">
             <span class="account-icon">👤</span>
+            <div class="active-indicator">✓</div>
           </div>
           <div class="account-details">
             <div class="account-email"></div>
             <div class="account-meta">
               <span class="account-status"></span>
-              <span class="account-expiry"></span>
-              <span class="active-indicator">✓ Active</span>
             </div>
           </div>
         </div>
@@ -145,7 +110,7 @@
           <p>Paste your Cursor account cookies JSON here:</p>
           <textarea
             id="cookiesInput"
-            rows="10"
+            rows="6"
             placeholder='[{"name": "SessionToken", "value": "...", ...}]'
           ></textarea>
           <div class="form-group">
@@ -153,36 +118,17 @@
             <input
               type="text"
               id="accountNameInput"
-              placeholder="Leave empty for auto-generated name"
+              placeholder="Auto-generated if empty"
             />
           </div>
         </div>
         <div class="modal-footer">
-          <button id="confirmAddBtn" class="btn btn-primary">
-            Add Account
-          </button>
+          <button id="confirmAddBtn" class="btn btn-primary">Add</button>
           <button id="cancelAddBtn" class="btn btn-secondary">Cancel</button>
         </div>
       </div>
     </div>
 
-    <!-- Hidden file inputs -->
-    <input id="fileInput" type="file" accept=".json" style="display: none" />
-    <input
-      id="downloadsFileInput"
-      type="file"
-      accept=".json"
-      multiple
-      style="display: none"
-    />
-    <input
-      id="folderInput"
-      type="file"
-      webkitdirectory
-      directory
-      style="display: none"
-    />
-
-    <script src="popup.js"></script>
+    <script src="sidepanel.js"></script>
   </body>
 </html>

@@ -80,8 +80,14 @@ class AccountService {
 
     // Restore cookies for target account
     for (const cookie of account.cookies) {
+      // Build URL properly
+      let domain = cookie.domain;
+      if (domain.startsWith(".")) {
+        domain = domain.substring(1);
+      }
+
       const cookieData = {
-        url: `https://${cookie.domain}${cookie.path}`,
+        url: `https://${domain}${cookie.path}`,
         name: cookie.name,
         value: cookie.value,
         domain: cookie.domain,
@@ -91,14 +97,34 @@ class AccountService {
         sameSite: cookie.sameSite || "unspecified",
       };
 
-      if (cookie.expirationDate) {
+      // Only add expiration if it exists and is valid
+      if (cookie.expirationDate && cookie.expirationDate > 0) {
         cookieData.expirationDate = cookie.expirationDate;
       }
 
       try {
         await chrome.cookies.set(cookieData);
+        console.log("Successfully set cookie:", cookie.name);
       } catch (error) {
-        console.error("Failed to set cookie:", error, cookieData);
+        console.error("Failed to set cookie:", cookie.name, error);
+        // Try without some problematic attributes
+        try {
+          const simpleCookieData = {
+            url: `https://${domain}${cookie.path}`,
+            name: cookie.name,
+            value: cookie.value,
+            domain: cookie.domain,
+            path: cookie.path,
+          };
+          await chrome.cookies.set(simpleCookieData);
+          console.log("Successfully set cookie with simple data:", cookie.name);
+        } catch (simpleError) {
+          console.error(
+            "Failed to set cookie even with simple data:",
+            cookie.name,
+            simpleError
+          );
+        }
       }
     }
 
@@ -337,6 +363,8 @@ class AccountService {
             if (chrome.runtime.lastError) {
               reject(chrome.runtime.lastError);
             } else {
+              // Store download ID for later reveal
+              this.saveDownloadId(account.name, downloadId);
               resolve(downloadId);
             }
           }
@@ -345,6 +373,103 @@ class AccountService {
       reader.onerror = reject;
       reader.readAsDataURL(blob);
     });
+  }
+
+  // Save download ID for account
+  async saveDownloadId(accountName, downloadId) {
+    const downloads = await chrome.storage.local.get("account_downloads");
+    const downloadsData = downloads.account_downloads || {};
+
+    downloadsData[accountName] = downloadId;
+
+    await chrome.storage.local.set({
+      account_downloads: downloadsData,
+    });
+  }
+
+  // Get download ID for account
+  async getDownloadId(accountName) {
+    const downloads = await chrome.storage.local.get("account_downloads");
+    const downloadsData = downloads.account_downloads || {};
+    return downloadsData[accountName] || null;
+  }
+
+  // Reveal account file in explorer
+  async revealAccountFile(accountName) {
+    try {
+      // Get account details for better search
+      const account = await this.find(accountName);
+      const searchTerms = [accountName];
+
+      if (account && account.email && account.email !== accountName) {
+        searchTerms.push(account.email);
+      }
+
+      const downloadId = await this.getDownloadId(accountName);
+      if (downloadId) {
+        try {
+          // Show file in folder using stored download ID
+          chrome.downloads.show(downloadId);
+          return true;
+        } catch (error) {
+          console.log("Stored download ID invalid, searching manually...");
+        }
+      }
+
+      // Try to find file by searching downloads
+      const downloads = await new Promise((resolve, reject) => {
+        chrome.downloads.search(
+          {
+            query: ["cursor_accounts"],
+            exists: true,
+            limit: 100,
+          },
+          (results) => {
+            if (chrome.runtime.lastError) {
+              reject(chrome.runtime.lastError);
+            } else {
+              // Filter results manually with multiple search terms
+              const filtered = results.filter((item) => {
+                const filename = item.filename.toLowerCase();
+                return (
+                  filename.includes("cursor_accounts") &&
+                  filename.includes(".json") &&
+                  searchTerms.some(
+                    (term) =>
+                      filename.includes(term.toLowerCase()) ||
+                      filename.includes(term.replace("@", "").replace(".", ""))
+                  )
+                );
+              });
+              resolve(filtered);
+            }
+          }
+        );
+      });
+
+      console.log(
+        `Found ${downloads.length} matching files for account: ${accountName}`
+      );
+
+      if (downloads && downloads.length > 0) {
+        // Show the most recent file
+        const mostRecent = downloads.sort(
+          (a, b) => new Date(b.startTime) - new Date(a.startTime)
+        )[0];
+
+        chrome.downloads.show(mostRecent.id);
+
+        // Update stored download ID for future use
+        await this.saveDownloadId(accountName, mostRecent.id);
+
+        return true;
+      }
+
+      return false;
+    } catch (error) {
+      console.error("Error revealing file:", error);
+      return false;
+    }
   }
 
   // Import account from JSON text
@@ -450,6 +575,40 @@ class AccountService {
     } catch (error) {
       console.error("Error loading from downloads:", error);
       return 0;
+    }
+  }
+
+  // Clear all extension data (for cleanup/reset)
+  async clearAllData() {
+    try {
+      console.log("Clearing all extension data...");
+
+      // Clear all local storage data
+      await chrome.storage.local.clear();
+
+      // Clear badge
+      await chrome.action.setBadgeText({ text: "" });
+
+      // Clear all Cursor cookies
+      await this.clearCursorCookies();
+
+      console.log("All extension data cleared successfully");
+      return true;
+    } catch (error) {
+      console.error("Error clearing extension data:", error);
+      return false;
+    }
+  }
+
+  // Get all stored data (for debugging)
+  async getAllStoredData() {
+    try {
+      const allData = await chrome.storage.local.get(null);
+      console.log("All stored data:", allData);
+      return allData;
+    } catch (error) {
+      console.error("Error getting stored data:", error);
+      return {};
     }
   }
 }

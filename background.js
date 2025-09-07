@@ -8,6 +8,16 @@ chrome.runtime.onInstalled.addListener(async () => {
   console.log("Cursor Account Manager extension installed");
 
   try {
+    // Enable side panel for all tabs (if supported)
+    if (chrome.sidePanel) {
+      console.log("Side Panel API available");
+      await chrome.sidePanel.setPanelBehavior({
+        openPanelOnActionClick: false,
+      });
+    } else {
+      console.log("Side Panel API not available - requires Chrome 114+");
+    }
+
     // Check if there's an active session
     const cookies = await accountService.getCurrentCookies();
     console.log("Found cookies:", cookies.length);
@@ -42,6 +52,7 @@ chrome.cookies.onChanged.addListener(async (changeInfo) => {
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   (async () => {
     try {
+      console.log("Received message:", request.type);
       switch (request.type) {
         case "ping":
           sendResponse({ success: true });
@@ -97,6 +108,37 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           sendResponse({ success: true, data: downloadFiles });
           break;
 
+        case "openSidePanel":
+          console.log("Processing openSidePanel request");
+          // Open side panel - must be in response to user gesture
+          try {
+            console.log("chrome.sidePanel available:", !!chrome.sidePanel);
+
+            if (chrome.sidePanel) {
+              console.log("Enabling side panel behavior");
+              // Enable side panel to open when extension icon is clicked
+              await chrome.sidePanel.setPanelBehavior({
+                openPanelOnActionClick: true,
+              });
+              sendResponse({
+                success: true,
+                message:
+                  "Side panel enabled. Click the extension icon to open sidebar.",
+              });
+            } else {
+              console.log("Side Panel API not available");
+              sendResponse({
+                success: false,
+                error:
+                  "Side Panel requires Chrome 114+. Please update your browser.",
+              });
+            }
+          } catch (error) {
+            console.error("Side panel error:", error);
+            sendResponse({ success: false, error: error.message });
+          }
+          break;
+
         case "importAccountJSON":
           const accountName = await accountService.importAccountFromJSON(
             request.jsonText,
@@ -108,6 +150,23 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         case "exportAccount":
           await accountService.exportAccountToFile(request.account);
           sendResponse({ success: true });
+          break;
+
+        case "revealAccountFile":
+          const revealed = await accountService.revealAccountFile(
+            request.account
+          );
+          sendResponse({ success: revealed });
+          break;
+
+        case "clearAllData":
+          const cleared = await accountService.clearAllData();
+          sendResponse({ success: cleared });
+          break;
+
+        case "getAllStoredData":
+          const allData = await accountService.getAllStoredData();
+          sendResponse({ success: true, data: allData });
           break;
 
         case "updateAccountInfo":

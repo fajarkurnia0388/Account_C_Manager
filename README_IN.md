@@ -85,6 +85,16 @@ Ekstensi Chrome yang memungkinkan Anda mengelola beberapa akun Cursor dan berali
 - Klik untuk melihat semua akun tersimpan
 - Beralih langsung dari halaman web
 
+### Menggunakan Mode Sidebar
+
+1. Klik ikon ekstensi
+2. Klik tombol "📌" (pin) untuk aktifkan mode sidebar
+3. Klik ikon ekstensi lagi untuk buka panel sidebar
+4. Sidebar akan tetap terbuka untuk manajemen akun persistent
+5. Gunakan tombol "🔗" di sidebar untuk buka manager lengkap
+
+**Catatan**: Mode sidebar memerlukan Chrome 114+ dan bekerja dalam dua langkah karena pembatasan keamanan browser.
+
 ### Fitur Manajemen Akun
 
 - **Desain Visual**: UI modern dan bersih dengan kartu akun menampilkan email dan status
@@ -96,6 +106,9 @@ Ekstensi Chrome yang memungkinkan Anda mengelola beberapa akun Cursor dan berali
 - **Redirect Dashboard**: Otomatis redirect ke cursor.com/dashboard setelah beralih
 - **Deteksi Kegagalan Switch**: Peringatan ketika perpindahan akun gagal karena konflik cookie
 - **Pembersih Data Browser**: Akses satu-klik ke pengaturan clear data browser (mendukung Chrome, Edge, Brave, Opera)
+- **Mode Sidebar**: Gunakan side panel Chrome untuk manajemen akun yang selalu terlihat
+- **Impor Folder**: Impor seluruh folder Downloads/cursor_accounts/ sekaligus
+- **Reveal File**: Tampilkan file akun di Windows Explorer dengan tombol 📁 (menampilkan file backup JSON)
 
 ## 🔧 Detail Teknis
 

@@ -85,6 +85,16 @@ A Chrome extension that allows you to manage multiple Cursor accounts and switch
 - Click to see all saved accounts
 - Switch directly from the webpage
 
+### Using Sidebar Mode
+
+1. Click the extension icon
+2. Click the "📌" (pin) button to enable sidebar mode
+3. Click the extension icon again to open the sidebar panel
+4. Sidebar will stay open for persistent account management
+5. Use "🔗" button in sidebar to open full popup manager
+
+**Note**: Sidebar mode requires Chrome 114+ and works in two steps due to browser security restrictions.
+
 ### Account Management Features
 
 - **Visual Design**: Clean, modern UI with account cards showing email and status
@@ -96,6 +106,9 @@ A Chrome extension that allows you to manage multiple Cursor accounts and switch
 - **Dashboard Redirect**: Automatically redirects to cursor.com/dashboard after switching
 - **Switch Failure Detection**: Warns when account switching fails due to cookie conflicts
 - **Browser Data Cleaner**: One-click access to browser's clear data settings (supports Chrome, Edge, Brave, Opera)
+- **Sidebar Mode**: Use Chrome's side panel for always-visible account management
+- **Folder Import**: Import entire Downloads/cursor_accounts/ folder at once
+- **File Reveal**: Show account files in Windows Explorer with 📁 button (reveals JSON backup files)
 
 ## 🔧 Technical Details
 

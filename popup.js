@@ -9,6 +9,9 @@ class CursorAccountManager {
   }
 
   async init() {
+    // Check Chrome version for Side Panel support
+    this.checkSidePanelSupport();
+
     // Load accounts and active account
     await this.loadAccounts();
 
@@ -17,6 +20,19 @@ class CursorAccountManager {
 
     // Update UI
     this.updateUI();
+  }
+
+  checkSidePanelSupport() {
+    const sidebarBtn = document.getElementById("sidebarModeToggle");
+
+    if (!chrome.sidePanel) {
+      // Disable sidebar button if not supported
+      sidebarBtn.style.opacity = "0.5";
+      sidebarBtn.title = "Side Panel requires Chrome 114+";
+      console.log("Side Panel not supported in this Chrome version");
+    } else {
+      console.log("Side Panel API available");
+    }
   }
 
   setupEventListeners() {
@@ -61,6 +77,13 @@ class CursorAccountManager {
       this.loadAccounts();
     });
 
+    // Sidebar mode toggle
+    document
+      .getElementById("sidebarModeToggle")
+      .addEventListener("click", () => {
+        this.toggleSidebarMode();
+      });
+
     // Dark mode toggle
     document.getElementById("darkModeToggle").addEventListener("click", () => {
       this.toggleDarkMode();
@@ -77,6 +100,23 @@ class CursorAccountManager {
 
     document.getElementById("confirmAddBtn").addEventListener("click", () => {
       this.addAccountFromJSON();
+    });
+
+    // Debug panel controls (enable with Ctrl+Shift+D)
+    document.addEventListener("keydown", (e) => {
+      if (e.ctrlKey && e.shiftKey && e.key === "D") {
+        this.toggleDebugPanel();
+      }
+    });
+
+    document
+      .getElementById("showStoredDataBtn")
+      .addEventListener("click", () => {
+        this.showStoredData();
+      });
+
+    document.getElementById("clearAllDataBtn").addEventListener("click", () => {
+      this.clearAllData();
     });
   }
 
@@ -270,6 +310,12 @@ class CursorAccountManager {
         }
       });
     }
+
+    // Setup reveal button
+    container.querySelector(".reveal-btn").addEventListener("click", (e) => {
+      e.stopPropagation();
+      this.revealAccountFile(account.name);
+    });
 
     // Setup delete button
     container.querySelector(".delete-btn").addEventListener("click", (e) => {
@@ -581,6 +627,24 @@ class CursorAccountManager {
     }
   }
 
+  async revealAccountFile(accountName) {
+    try {
+      const response = await chrome.runtime.sendMessage({
+        type: "revealAccountFile",
+        account: accountName,
+      });
+
+      if (response.success) {
+        this.showNotification("File revealed in explorer", "success");
+      } else {
+        this.showNotification("File not found in Downloads", "error");
+      }
+    } catch (error) {
+      console.error("Error revealing file:", error);
+      this.showNotification("Error revealing file", "error");
+    }
+  }
+
   async deleteAccount(accountName) {
     if (!confirm(`Delete account ${accountName}?`)) {
       return;
@@ -608,6 +672,47 @@ class CursorAccountManager {
       this.showNotification("Error deleting account", "error");
     } finally {
       this.showLoading(false);
+    }
+  }
+
+  async toggleSidebarMode() {
+    try {
+      // Simple test message first
+      const testResponse = await chrome.runtime.sendMessage({
+        type: "ping",
+      });
+
+      console.log("Test ping response:", testResponse);
+
+      if (!testResponse.success) {
+        this.showNotification("Background script not responding", "error");
+        return;
+      }
+
+      // Now try sidebar
+      const response = await chrome.runtime.sendMessage({
+        type: "openSidePanel",
+      });
+
+      console.log("Sidebar response:", response);
+
+      if (response && response.success) {
+        if (response.message) {
+          // Side panel behavior enabled - user needs to click icon again
+          this.showNotification(response.message, "info");
+          // Don't close popup, let user click extension icon
+        } else {
+          // Direct open successful
+          this.showNotification("Opening sidebar...", "success");
+          setTimeout(() => window.close(), 500);
+        }
+      } else {
+        const errorMsg = response ? response.error : "No response";
+        this.showNotification(`Sidebar error: ${errorMsg}`, "error");
+      }
+    } catch (error) {
+      console.error("Error in toggleSidebarMode:", error);
+      this.showNotification(`Error: ${error.message}`, "error");
     }
   }
 
@@ -776,6 +881,85 @@ class CursorAccountManager {
     const div = document.createElement("div");
     div.textContent = text;
     return div.innerHTML;
+  }
+
+  // Debug Panel Methods
+  toggleDebugPanel() {
+    const debugBtn = document.getElementById("debugToggle");
+    const debugPanel = document.getElementById("debugPanel");
+
+    const isVisible = debugBtn.style.display !== "none";
+
+    debugBtn.style.display = isVisible ? "none" : "inline-block";
+    debugPanel.style.display = isVisible ? "none" : "block";
+
+    if (!isVisible) {
+      this.showNotification(
+        "Debug mode enabled (Ctrl+Shift+D to toggle)",
+        "info"
+      );
+    }
+  }
+
+  async showStoredData() {
+    try {
+      const response = await chrome.runtime.sendMessage({
+        type: "getAllStoredData",
+      });
+
+      const debugOutput = document.getElementById("debugOutput");
+
+      if (response.success) {
+        debugOutput.textContent = JSON.stringify(response.data, null, 2);
+        this.showNotification("Stored data loaded", "success");
+      } else {
+        debugOutput.textContent = "Error loading stored data";
+        this.showNotification("Error loading stored data", "error");
+      }
+    } catch (error) {
+      console.error("Error showing stored data:", error);
+      this.showNotification("Error showing stored data", "error");
+    }
+  }
+
+  async clearAllData() {
+    const confirmed = confirm(
+      "⚠️ WARNING: This will delete ALL accounts and data.\n\nThis action cannot be undone. Are you sure?"
+    );
+
+    if (!confirmed) return;
+
+    const doubleConfirm = confirm(
+      "🚨 FINAL CONFIRMATION: Delete ALL extension data?\n\nThis includes:\n- All saved accounts\n- All cookies\n- All settings\n\nContinue?"
+    );
+
+    if (!doubleConfirm) return;
+
+    try {
+      this.showLoading(true);
+
+      const response = await chrome.runtime.sendMessage({
+        type: "clearAllData",
+      });
+
+      if (response.success) {
+        document.getElementById("debugOutput").textContent =
+          "All data cleared successfully";
+        this.showNotification("All data cleared. Extension reset.", "success");
+
+        // Reload the popup
+        setTimeout(() => {
+          this.loadAccounts();
+        }, 1000);
+      } else {
+        this.showNotification("Error clearing data", "error");
+      }
+    } catch (error) {
+      console.error("Error clearing data:", error);
+      this.showNotification("Error clearing data", "error");
+    } finally {
+      this.showLoading(false);
+    }
   }
 }
 

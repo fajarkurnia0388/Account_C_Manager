@@ -426,6 +426,58 @@ body {
   background: var(--text-muted);
 }
 
+/* Debug Panel */
+.debug-panel {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  padding: 12px;
+  margin: 12px 0;
+}
+
+.debug-panel h4 {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.debug-actions {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.debug-actions .btn {
+  flex: 1;
+  font-size: 12px;
+  padding: 6px 12px;
+}
+
+.debug-output {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 8px;
+  font-family: "Courier New", monospace;
+  font-size: 11px;
+  max-height: 200px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+  color: var(--text-primary);
+}
+
+.btn-danger {
+  background: #dc3545;
+  color: white;
+  border: 1px solid #dc3545;
+}
+
+.btn-danger:hover {
+  background: #c82333;
+  border-color: #bd2130;
+}
+
 /* Utilities */
 .btn-icon {
   font-size: 14px;
@@ -556,6 +608,7 @@ body {
   z-index: 2;
 }
 
+.reveal-btn,
 .delete-btn {
   padding: 8px;
   background: transparent;
@@ -564,6 +617,12 @@ body {
   cursor: pointer;
   opacity: 0.6;
   transition: all 0.2s ease;
+}
+
+.reveal-btn:hover {
+  opacity: 1;
+  color: var(--primary-color);
+  transform: scale(1.1);
 }
 
 .delete-btn:hover {
