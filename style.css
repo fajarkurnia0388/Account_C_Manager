@@ -442,15 +442,19 @@ body {
 }
 
 .debug-actions {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 8px;
   margin-bottom: 12px;
 }
 
 .debug-actions .btn {
-  flex: 1;
   font-size: 12px;
   padding: 6px 12px;
+}
+
+.debug-actions .btn:last-child {
+  grid-column: 1 / -1;
 }
 
 .debug-output {
@@ -476,6 +480,17 @@ body {
 .btn-danger:hover {
   background: #c82333;
   border-color: #bd2130;
+}
+
+.btn-warning {
+  background: #ffc107;
+  color: #212529;
+  border: 1px solid #ffc107;
+}
+
+.btn-warning:hover {
+  background: #e0a800;
+  border-color: #d39e00;
 }
 
 /* Utilities */

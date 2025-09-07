@@ -109,6 +109,8 @@ Ekstensi Chrome yang memungkinkan Anda mengelola beberapa akun Cursor dan berali
 - **Mode Sidebar**: Gunakan side panel Chrome untuk manajemen akun yang selalu terlihat
 - **Impor Folder**: Impor seluruh folder Downloads/cursor_accounts/ sekaligus
 - **Reveal File**: Tampilkan file akun di Windows Explorer dengan tombol 📁 (menampilkan file backup JSON)
+- **Smart Deletion**: Opsi hapus akun saja atau termasuk file backup di folder Downloads
+- **File Management**: Pembersihan otomatis file backup duplikat saat konsolidasi
 
 ## 🔧 Detail Teknis
 

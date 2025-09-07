@@ -310,26 +310,22 @@ class CursorAccountSidebar {
     textarea.parentNode.insertBefore(warning, textarea.nextSibling);
   }
 
-  // Check if account already exists by comparing session tokens
+  // Check if account already exists - delegate to service
   async findExistingAccount(newCookies) {
-    const newSessionToken = this.extractSessionToken(newCookies);
-    if (!newSessionToken) return null;
+    try {
+      const response = await chrome.runtime.sendMessage({
+        type: "checkDuplicateAccount",
+        cookies: newCookies,
+      });
 
-    for (const account of this.accounts) {
-      const existingSessionToken = this.extractSessionToken(account.cookies);
-      if (existingSessionToken && existingSessionToken === newSessionToken) {
-        return account;
+      if (response.success && response.duplicate) {
+        return response.duplicate.account;
       }
+      return null;
+    } catch (error) {
+      console.error("Error checking for duplicates:", error);
+      return null;
     }
-    return null;
-  }
-
-  // Extract session token from cookies
-  extractSessionToken(cookies) {
-    const sessionCookie = cookies.find(
-      (c) => c.name === "WorkosCursorSessionToken" || c.name === "SessionToken"
-    );
-    return sessionCookie ? sessionCookie.value : null;
   }
 
   async addAccountFromJSON() {
@@ -447,9 +443,21 @@ class CursorAccountSidebar {
   }
 
   async deleteAccount(accountName) {
+    // First confirmation for basic deletion
     if (!confirm(`Delete account ${accountName}?`)) {
       return;
     }
+
+    // Second confirmation for file deletion option
+    const deleteFile = confirm(
+      `Also delete the backup file in Downloads/cursor_accounts/?
+      
+✅ YES: Delete both account and file
+❌ NO: Keep file, delete account only
+
+Choose YES if you want complete removal.
+Choose NO if you want to keep the backup file.`
+    );
 
     try {
       this.showLoading(true);
@@ -457,10 +465,14 @@ class CursorAccountSidebar {
       const response = await chrome.runtime.sendMessage({
         type: "removeAccount",
         account: accountName,
+        deleteFile: deleteFile,
       });
 
       if (response.success) {
-        this.showNotification(`Deleted: ${accountName}`, "success");
+        const message = deleteFile
+          ? `Deleted account and file: ${accountName}`
+          : `Deleted account: ${accountName} (file kept)`;
+        this.showNotification(message, "success");
         await this.loadAccounts();
       } else {
         this.showNotification("Delete failed", "error");

@@ -118,6 +118,12 @@ class CursorAccountManager {
     document.getElementById("clearAllDataBtn").addEventListener("click", () => {
       this.clearAllData();
     });
+
+    document
+      .getElementById("consolidateDuplicatesBtn")
+      .addEventListener("click", () => {
+        this.consolidateDuplicates();
+      });
   }
 
   async loadAccounts() {
@@ -380,28 +386,22 @@ class CursorAccountManager {
     textarea.parentNode.insertBefore(warning, textarea.nextSibling);
   }
 
-  // Check if account already exists by comparing session tokens
+  // Check if account already exists - delegate to service
   async findExistingAccount(newCookies) {
-    // Extract session token from new cookies
-    const newSessionToken = this.extractSessionToken(newCookies);
-    if (!newSessionToken) return null;
+    try {
+      const response = await chrome.runtime.sendMessage({
+        type: "checkDuplicateAccount",
+        cookies: newCookies,
+      });
 
-    // Check against existing accounts
-    for (const account of this.accounts) {
-      const existingSessionToken = this.extractSessionToken(account.cookies);
-      if (existingSessionToken && existingSessionToken === newSessionToken) {
-        return account;
+      if (response.success && response.duplicate) {
+        return response.duplicate.account;
       }
+      return null;
+    } catch (error) {
+      console.error("Error checking for duplicates:", error);
+      return null;
     }
-    return null;
-  }
-
-  // Extract session token from cookies
-  extractSessionToken(cookies) {
-    const sessionCookie = cookies.find(
-      (c) => c.name === "WorkosCursorSessionToken" || c.name === "SessionToken"
-    );
-    return sessionCookie ? sessionCookie.value : null;
   }
 
   async addAccountFromJSON() {
@@ -646,9 +646,21 @@ class CursorAccountManager {
   }
 
   async deleteAccount(accountName) {
+    // First confirmation for basic deletion
     if (!confirm(`Delete account ${accountName}?`)) {
       return;
     }
+
+    // Second confirmation for file deletion option
+    const deleteFile = confirm(
+      `Also delete the backup file in Downloads/cursor_accounts/?
+      
+✅ YES: Delete both account and file
+❌ NO: Keep file, delete account only
+
+Choose YES if you want complete removal.
+Choose NO if you want to keep the backup file.`
+    );
 
     try {
       this.showLoading(true);
@@ -656,10 +668,14 @@ class CursorAccountManager {
       const response = await chrome.runtime.sendMessage({
         type: "removeAccount",
         account: accountName,
+        deleteFile: deleteFile,
       });
 
       if (response.success) {
-        this.showNotification(`Deleted account: ${accountName}`, "success");
+        const message = deleteFile
+          ? `Deleted account and file: ${accountName}`
+          : `Deleted account: ${accountName} (file kept)`;
+        this.showNotification(message, "success");
         await this.loadAccounts();
       } else {
         this.showNotification(
@@ -815,37 +831,28 @@ class CursorAccountManager {
           }
 
           const text = await file.text();
-          const data = JSON.parse(text);
 
-          // Check if it's a valid account file
-          if (data.account || Array.isArray(data)) {
-            // Check for duplicates
-            const cookies = data.account ? data.account.cookies : data;
-            const existingAccount = await this.findExistingAccount(cookies);
+          // Try to import - let the service handle duplicate detection
+          const response = await chrome.runtime.sendMessage({
+            type: "importAccountJSON",
+            jsonText: text,
+            customName: null,
+          });
 
-            if (existingAccount) {
+          if (response.success) {
+            importedCount++;
+            console.log(`Imported: ${file.name} as ${response.data}`);
+          } else {
+            // Check if error is due to duplicate
+            if (response.error && response.error.includes("already exists")) {
               skippedCount++;
-              console.log(`Skipped duplicate: ${file.name}`);
-              continue;
-            }
-
-            // Import the account
-            const response = await chrome.runtime.sendMessage({
-              type: "importAccountJSON",
-              jsonText: text,
-              customName: null,
-            });
-
-            if (response.success) {
-              importedCount++;
-              console.log(`Imported: ${file.name} as ${response.data}`);
+              console.log(
+                `Skipped duplicate: ${file.name} - ${response.error}`
+              );
             } else {
               errorCount++;
               console.error(`Failed to import: ${file.name}`, response.error);
             }
-          } else {
-            errorCount++;
-            console.log(`Invalid format: ${file.name}`);
           }
         } catch (error) {
           console.error("Error importing file:", file.name, error);
@@ -957,6 +964,48 @@ class CursorAccountManager {
     } catch (error) {
       console.error("Error clearing data:", error);
       this.showNotification("Error clearing data", "error");
+    } finally {
+      this.showLoading(false);
+    }
+  }
+
+  async consolidateDuplicates() {
+    const confirmed = confirm(
+      "🔧 Fix Duplicate Accounts?\n\nThis will:\n- Find accounts with the same session token\n- Keep the account with proper email name\n- Remove duplicate accounts\n\nContinue?"
+    );
+
+    if (!confirmed) return;
+
+    try {
+      this.showLoading(true);
+
+      const response = await chrome.runtime.sendMessage({
+        type: "consolidateDuplicates",
+      });
+
+      if (response.success) {
+        const message = `Consolidation completed.\nRemoved ${response.removed} duplicate account(s).`;
+        document.getElementById("debugOutput").textContent = message;
+        this.showNotification(
+          `Fixed ${response.removed} duplicate accounts`,
+          response.removed > 0 ? "success" : "info"
+        );
+
+        // Reload accounts if duplicates were removed
+        if (response.removed > 0) {
+          setTimeout(() => {
+            this.loadAccounts();
+          }, 1000);
+        }
+      } else {
+        this.showNotification("Error consolidating duplicates", "error");
+        document.getElementById(
+          "debugOutput"
+        ).textContent = `Error: ${response.error}`;
+      }
+    } catch (error) {
+      console.error("Error consolidating duplicates:", error);
+      this.showNotification("Error consolidating duplicates", "error");
     } finally {
       this.showLoading(false);
     }

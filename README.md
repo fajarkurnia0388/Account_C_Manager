@@ -109,6 +109,8 @@ A Chrome extension that allows you to manage multiple Cursor accounts and switch
 - **Sidebar Mode**: Use Chrome's side panel for always-visible account management
 - **Folder Import**: Import entire Downloads/cursor_accounts/ folder at once
 - **File Reveal**: Show account files in Windows Explorer with 📁 button (reveals JSON backup files)
+- **Smart Deletion**: Option to delete account only or include backup files in Downloads folder
+- **File Management**: Automatic cleanup of duplicate backup files during consolidation
 
 ## 🔧 Technical Details
 

@@ -139,7 +139,7 @@ class AccountService {
   }
 
   // Remove account
-  async remove(accountName) {
+  async remove(accountName, deleteFile = false) {
     const accounts = await chrome.storage.local.get(this.STORAGE_KEY);
     const accountsData = accounts[this.STORAGE_KEY] || {};
 
@@ -155,6 +155,31 @@ class AccountService {
     delete avatarsData[accountName];
     await chrome.storage.local.set({
       [this.AVATARS_KEY]: avatarsData,
+    });
+
+    // Remove account info
+    const accountInfo = await chrome.storage.local.get(this.ACCOUNT_INFO_KEY);
+    const infoData = accountInfo[this.ACCOUNT_INFO_KEY] || {};
+    delete infoData[accountName];
+    await chrome.storage.local.set({
+      [this.ACCOUNT_INFO_KEY]: infoData,
+    });
+
+    // Optionally delete the exported file
+    if (deleteFile) {
+      try {
+        await this.deleteAccountFile(accountName);
+      } catch (error) {
+        console.warn("Could not delete account file:", error);
+      }
+    }
+
+    // Remove download ID tracking
+    const downloads = await chrome.storage.local.get("account_downloads");
+    const downloadsData = downloads.account_downloads || {};
+    delete downloadsData[accountName];
+    await chrome.storage.local.set({
+      account_downloads: downloadsData,
     });
 
     // If this was active account, clear active status
@@ -310,6 +335,17 @@ class AccountService {
     const cookies = await this.getCurrentCookies();
     if (cookies.length === 0) return null;
 
+    // Check if this account already exists
+    const duplicate = await this.findDuplicateAccount(cookies);
+    if (duplicate) {
+      console.log(
+        `Current session matches existing account: ${duplicate.account.name}`
+      );
+      // Set existing account as active instead of creating new one
+      await this.setActiveAccount(duplicate.account.name);
+      return duplicate.account.name;
+    }
+
     const username = await this.extractUsername();
     await this.upsert(username, cookies);
 
@@ -394,6 +430,110 @@ class AccountService {
     return downloadsData[accountName] || null;
   }
 
+  // Delete account file from Downloads
+  async deleteAccountFile(accountName) {
+    try {
+      // Get account details for better search
+      const account = await this.find(accountName);
+      const searchTerms = [accountName];
+
+      if (account && account.email && account.email !== accountName) {
+        searchTerms.push(account.email);
+      }
+
+      const downloadId = await this.getDownloadId(accountName);
+      if (downloadId) {
+        try {
+          // Try to remove using stored download ID
+          await new Promise((resolve, reject) => {
+            chrome.downloads.removeFile(downloadId, () => {
+              if (chrome.runtime.lastError) {
+                console.log(
+                  "Could not remove by download ID, searching manually..."
+                );
+                resolve();
+              } else {
+                console.log("File deleted using download ID");
+                resolve();
+              }
+            });
+          });
+          return true;
+        } catch (error) {
+          console.log("Stored download ID failed, searching manually...");
+        }
+      }
+
+      // Try to find and delete file by searching downloads
+      const downloads = await new Promise((resolve, reject) => {
+        chrome.downloads.search(
+          {
+            query: ["cursor_accounts"],
+            exists: true,
+            limit: 100,
+          },
+          (results) => {
+            if (chrome.runtime.lastError) {
+              reject(chrome.runtime.lastError);
+            } else {
+              // Filter results manually with multiple search terms
+              const filtered = results.filter((item) => {
+                const filename = item.filename.toLowerCase();
+                return (
+                  filename.includes("cursor_accounts") &&
+                  filename.includes(".json") &&
+                  searchTerms.some(
+                    (term) =>
+                      filename.includes(term.toLowerCase()) ||
+                      filename.includes(term.replace("@", "").replace(".", ""))
+                  )
+                );
+              });
+              resolve(filtered);
+            }
+          }
+        );
+      });
+
+      console.log(
+        `Found ${downloads.length} matching files for deletion: ${accountName}`
+      );
+
+      if (downloads && downloads.length > 0) {
+        // Delete all matching files
+        let deletedCount = 0;
+        for (const download of downloads) {
+          try {
+            await new Promise((resolve, reject) => {
+              chrome.downloads.removeFile(download.id, () => {
+                if (chrome.runtime.lastError) {
+                  console.warn(
+                    `Could not delete file: ${download.filename}`,
+                    chrome.runtime.lastError
+                  );
+                  resolve();
+                } else {
+                  console.log(`Deleted file: ${download.filename}`);
+                  deletedCount++;
+                  resolve();
+                }
+              });
+            });
+          } catch (error) {
+            console.warn(`Error deleting file ${download.filename}:`, error);
+          }
+        }
+
+        return deletedCount > 0;
+      }
+
+      return false;
+    } catch (error) {
+      console.error("Error deleting account file:", error);
+      return false;
+    }
+  }
+
   // Reveal account file in explorer
   async revealAccountFile(accountName) {
     try {
@@ -472,7 +612,36 @@ class AccountService {
     }
   }
 
-  // Import account from JSON text
+  // Check if account already exists by session token
+  async findDuplicateAccount(cookies) {
+    const newSessionToken = this.extractSessionToken(cookies);
+    if (!newSessionToken) return null;
+
+    // Check existing accounts in storage
+    const existingAccounts = await this.getAll();
+    for (const account of existingAccounts) {
+      const existingToken = this.extractSessionToken(account.cookies);
+      if (existingToken && existingToken === newSessionToken) {
+        console.log(`Duplicate found in storage: ${account.name}`);
+        return {
+          source: "storage",
+          account: account,
+        };
+      }
+    }
+
+    return null;
+  }
+
+  // Extract session token from cookies for duplicate detection
+  extractSessionToken(cookies) {
+    const sessionCookie = cookies.find(
+      (c) => c.name === "WorkosCursorSessionToken" || c.name === "SessionToken"
+    );
+    return sessionCookie ? sessionCookie.value : null;
+  }
+
+  // Import account from JSON text with enhanced duplicate detection
   async importAccountFromJSON(jsonText, customName = null) {
     try {
       const data = JSON.parse(jsonText);
@@ -494,6 +663,16 @@ class AccountService {
         name = customName || data.account.name || this.generateAccountName();
       } else {
         throw new Error("Invalid JSON format");
+      }
+
+      // Check for duplicates before importing
+      const duplicate = await this.findDuplicateAccount(cookies);
+      if (duplicate) {
+        throw new Error(
+          `Account already exists as: ${
+            duplicate.account.email || duplicate.account.name
+          }`
+        );
       }
 
       // Save account
@@ -609,6 +788,70 @@ class AccountService {
     } catch (error) {
       console.error("Error getting stored data:", error);
       return {};
+    }
+  }
+
+  // Find and consolidate duplicate accounts
+  async consolidateDuplicates() {
+    try {
+      console.log("Starting duplicate consolidation...");
+      const accounts = await this.getAll();
+      const duplicateGroups = new Map();
+      let consolidatedCount = 0;
+
+      // Group accounts by session token
+      for (const account of accounts) {
+        const sessionToken = this.extractSessionToken(account.cookies);
+        if (sessionToken) {
+          if (!duplicateGroups.has(sessionToken)) {
+            duplicateGroups.set(sessionToken, []);
+          }
+          duplicateGroups.get(sessionToken).push(account);
+        }
+      }
+
+      // Process duplicate groups
+      for (const [sessionToken, accountGroup] of duplicateGroups) {
+        if (accountGroup.length > 1) {
+          console.log(
+            `Found ${
+              accountGroup.length
+            } duplicates for token: ${sessionToken.substring(0, 20)}...`
+          );
+
+          // Find the best account to keep (prefer one with email format)
+          let keepAccount = accountGroup[0];
+          for (const account of accountGroup) {
+            if (
+              account.email &&
+              account.email.includes("@") &&
+              account.email !== account.name
+            ) {
+              keepAccount = account;
+              break;
+            }
+          }
+
+          // Remove other duplicates (including files)
+          for (const account of accountGroup) {
+            if (account.name !== keepAccount.name) {
+              console.log(
+                `Removing duplicate: ${account.name} (keeping: ${keepAccount.name})`
+              );
+              await this.remove(account.name, true); // deleteFile = true
+              consolidatedCount++;
+            }
+          }
+        }
+      }
+
+      console.log(
+        `Consolidation completed. Removed ${consolidatedCount} duplicate accounts.`
+      );
+      return { success: true, removed: consolidatedCount };
+    } catch (error) {
+      console.error("Error consolidating duplicates:", error);
+      return { success: false, error: error.message };
     }
   }
 }

@@ -69,7 +69,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           break;
 
         case "removeAccount":
-          await accountService.remove(request.account);
+          await accountService.remove(
+            request.account,
+            request.deleteFile || false
+          );
           sendResponse({ success: true });
           break;
 
@@ -167,6 +170,19 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         case "getAllStoredData":
           const allData = await accountService.getAllStoredData();
           sendResponse({ success: true, data: allData });
+          break;
+
+        case "checkDuplicateAccount":
+          const duplicate = await accountService.findDuplicateAccount(
+            request.cookies
+          );
+          sendResponse({ success: true, duplicate: duplicate });
+          break;
+
+        case "consolidateDuplicates":
+          const consolidationResult =
+            await accountService.consolidateDuplicates();
+          sendResponse(consolidationResult);
           break;
 
         case "updateAccountInfo":
