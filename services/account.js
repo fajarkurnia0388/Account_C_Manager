@@ -231,14 +231,20 @@ class AccountService {
     }
   }
 
-  // Reload all Cursor tabs
+  // Reload all Cursor tabs and redirect to dashboard
   async reloadCursorTabs() {
     const tabs = await chrome.tabs.query({
       url: ["https://*.cursor.com/*", "https://cursor.com/*"],
     });
 
     for (const tab of tabs) {
-      chrome.tabs.reload(tab.id);
+      // Redirect to dashboard instead of just reloading
+      chrome.tabs.update(tab.id, { url: "https://cursor.com/dashboard" });
+    }
+
+    // If no cursor tabs are open, create a new one
+    if (tabs.length === 0) {
+      chrome.tabs.create({ url: "https://cursor.com/dashboard" });
     }
   }
 

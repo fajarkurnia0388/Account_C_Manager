@@ -267,6 +267,30 @@ class CursorAccountManager {
     document.getElementById("addAccountModal").style.display = "none";
   }
 
+  // Check if account already exists by comparing session tokens
+  async findExistingAccount(newCookies) {
+    // Extract session token from new cookies
+    const newSessionToken = this.extractSessionToken(newCookies);
+    if (!newSessionToken) return null;
+
+    // Check against existing accounts
+    for (const account of this.accounts) {
+      const existingSessionToken = this.extractSessionToken(account.cookies);
+      if (existingSessionToken && existingSessionToken === newSessionToken) {
+        return account;
+      }
+    }
+    return null;
+  }
+
+  // Extract session token from cookies
+  extractSessionToken(cookies) {
+    const sessionCookie = cookies.find(
+      (c) => c.name === "WorkosCursorSessionToken" || c.name === "SessionToken"
+    );
+    return sessionCookie ? sessionCookie.value : null;
+  }
+
   async addAccountFromJSON() {
     const cookiesInput = document.getElementById("cookiesInput").value.trim();
     const accountName = document
@@ -282,7 +306,19 @@ class CursorAccountManager {
       this.showLoading(true);
 
       // Validate JSON
-      JSON.parse(cookiesInput);
+      const cookiesData = JSON.parse(cookiesInput);
+
+      // Check if account already exists by comparing cookies
+      const existingAccount = await this.findExistingAccount(cookiesData);
+      if (existingAccount) {
+        this.showNotification(
+          `Account already exists: ${
+            existingAccount.email || existingAccount.name
+          }`,
+          "error"
+        );
+        return;
+      }
 
       const response = await chrome.runtime.sendMessage({
         type: "importAccountJSON",
@@ -349,9 +385,9 @@ class CursorAccountManager {
         });
 
         if (response.success) {
-          this.showNotification(`Switched to ${accountName}`, "success");
-          // Popup will close and page will reload
-          setTimeout(() => window.close(), 1000);
+          this.showNotification(`Switching to ${accountName}...`, "success");
+          // Close popup and let background script handle redirect
+          setTimeout(() => window.close(), 500);
         } else {
           this.showNotification(
             response.error || "Failed to switch account",

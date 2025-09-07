@@ -78,6 +78,8 @@ Ekstensi Chrome yang memungkinkan Anda mengelola beberapa akun Cursor dan berali
 - **Indikator Aktif**: Titik hijau (🟢) menunjukkan akun yang sedang aktif
 - **Klik untuk Beralih**: Cukup klik kartu akun untuk beralih instan
 - **Backup Otomatis**: Semua akun otomatis disimpan ke Downloads/cursor_accounts/
+- **Deteksi Duplikat**: Mencegah penambahan akun yang sama dua kali
+- **Redirect Dashboard**: Otomatis redirect ke cursor.com/dashboard setelah beralih
 
 ## 🔧 Detail Teknis
 

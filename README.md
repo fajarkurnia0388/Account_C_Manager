@@ -78,6 +78,8 @@ A Chrome extension that allows you to manage multiple Cursor accounts and switch
 - **Active Indicator**: Green dot (🟢) shows currently active account
 - **Click to Switch**: Simply click any account card to switch instantly
 - **Auto Backup**: All accounts automatically saved to Downloads/cursor_accounts/
+- **Duplicate Detection**: Prevents adding the same account twice
+- **Dashboard Redirect**: Automatically redirects to cursor.com/dashboard after switching
 
 ## 🔧 Technical Details
 

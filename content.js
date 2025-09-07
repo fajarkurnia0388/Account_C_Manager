@@ -270,8 +270,11 @@
       });
 
       if (response.success) {
-        showNotification(`Switched to ${accountName}`);
-        // Page will reload automatically from background script
+        showNotification(`Switching to ${accountName}...`);
+        // Redirect to dashboard after successful switch
+        setTimeout(() => {
+          window.location.href = "https://cursor.com/dashboard";
+        }, 1000);
       } else {
         showNotification(`Failed to switch: ${response.error}`, "error");
       }
