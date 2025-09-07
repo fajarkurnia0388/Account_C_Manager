@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <title>Account Manager</title>
+    <title>Cursor Account Manager</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="stylesheet" href="style.css" />
   </head>
@@ -11,130 +11,53 @@
       <!-- Header -->
       <div class="header">
         <div class="title">
-          🍪
-          <h2>Cookie Manager</h2>
-          <span class="version">v2.0</span>
+          <span class="icon">👤</span>
+          <h2>Cursor Account Manager</h2>
         </div>
         <div class="header-actions">
           <button id="darkModeToggle" class="icon-btn" title="Toggle Dark Mode">
             🌙
           </button>
-          <button id="settingsBtn" class="icon-btn" title="Settings">⚙️</button>
+          <button id="refreshBtn" class="icon-btn" title="Refresh">🔄</button>
         </div>
       </div>
 
-      <!-- Stats Bar -->
-      <div class="stats-bar">
-        <div class="stat-item">
-          📊
-          <span>Total: <span id="totalCount">0</span></span>
-        </div>
-        <div class="stat-item">
-          ✅
-          <span>Selected: <span id="selectedCount">0</span></span>
-        </div>
-        <div class="stat-item">
-          🌐
-          <span>Domains: <span id="domainsCount">0</span></span>
+      <!-- Current Account Section -->
+      <div class="current-account-section">
+        <div class="current-label">Active Account</div>
+        <div class="current-account" id="currentAccount">
+          <span class="account-icon">🔴</span>
+          <span class="account-name">Not logged in</span>
         </div>
       </div>
 
       <!-- Main Controls -->
       <div class="controls-section">
-        <div class="control-group">
-          <button id="extractBtn" class="btn btn-primary">
-            ⬇️ Extract Current
-          </button>
-          <button id="extractAllBtn" class="btn btn-secondary">
-            🌐 Extract All Tabs
-          </button>
-        </div>
-
-        <div class="control-group">
-          <button id="importBtn" class="btn btn-info">📥 Import</button>
-          <div class="dropdown">
-            <button id="exportDropdown" class="btn btn-success dropdown-toggle">
-              📤 Export ▼
-            </button>
-            <div class="dropdown-menu">
-              <a href="#" id="exportSelected">Selected Items</a>
-              <a href="#" id="exportAll">All Items</a>
-              <a href="#" id="exportByDomain">By Domain</a>
-              <a href="#" id="exportCSV">Export as CSV</a>
-            </div>
-          </div>
-        </div>
+        <button id="addAccountBtn" class="btn btn-primary">
+          ➕ Add Account
+        </button>
+        <button id="exportCurrentBtn" class="btn btn-secondary">
+          💾 Export Current
+        </button>
       </div>
 
-      <!-- Search and Filters -->
-      <div class="search-section">
-        <div class="search-bar">
-          <span class="search-icon">🔍</span>
-          <input
-            type="text"
-            id="searchInput"
-            placeholder="Search cookies by name, domain, or value..."
-          />
-          <button id="clearSearch" class="clear-btn">❌</button>
-        </div>
-
-        <div class="filter-bar">
-          <select id="domainFilter">
-            <option value="">All Domains</option>
-          </select>
-
-          <select id="typeFilter">
-            <option value="">All Types</option>
-            <option value="session">Session</option>
-            <option value="persistent">Persistent</option>
-            <option value="secure">Secure Only</option>
-            <option value="httponly">HTTP Only</option>
-          </select>
-
-          <button id="clearFilters" class="btn btn-outline">
-            🔄 Clear Filters
-          </button>
-        </div>
-      </div>
-
-      <!-- Bulk Actions -->
-      <div class="bulk-actions" id="bulkActions" style="display: none">
-        <div class="bulk-info">
-          <span id="bulkCount">0</span> items selected
-        </div>
-        <div class="bulk-buttons">
-          <button id="bulkUse" class="btn btn-primary btn-sm">
-            ▶️ Apply All
-          </button>
-          <button id="bulkExport" class="btn btn-info btn-sm">📥 Export</button>
-          <button id="bulkDelete" class="btn btn-danger btn-sm">
-            🗑️ Delete
-          </button>
-          <button id="bulkClear" class="btn btn-outline btn-sm">
-            Clear Selection
-          </button>
-        </div>
-      </div>
-
-      <!-- Items List -->
-      <div class="items-section">
+      <!-- Accounts List -->
+      <div class="accounts-section">
         <div class="section-header">
-          <h3>📋 Cookie Items</h3>
-          <div class="list-actions">
-            <button id="selectAllBtn" class="btn btn-sm btn-outline">
-              ☑️ Select All
-            </button>
-            <button id="sortBtn" class="btn btn-sm btn-outline">🔢 Sort</button>
-          </div>
+          <h3>Saved Accounts</h3>
+          <span class="accounts-count" id="accountsCount">(0)</span>
         </div>
 
-        <div id="itemsContainer">
-          <div id="itemsList" class="items-list"></div>
-          <div id="emptyState" class="empty-state" style="display: none">
-            🍪
-            <h4>No cookies found</h4>
-            <p>Extract cookies from a website or import from a JSON file</p>
-          </div>
+        <div id="accountsList" class="accounts-list">
+          <!-- Accounts will be populated here -->
+        </div>
+
+        <div id="noAccounts" class="empty-state" style="display: none">
+          <div class="empty-icon">📁</div>
+          <p>No accounts saved yet</p>
+          <p class="hint">
+            Click "Add Current Session" to save your current Cursor account
+          </p>
         </div>
       </div>
 
@@ -143,120 +66,69 @@
         <div class="spinner"></div>
         <p>Processing...</p>
       </div>
+
+      <!-- Notification -->
+      <div id="notification" class="notification" style="display: none">
+        <span id="notificationText"></span>
+      </div>
     </div>
 
-    <!-- Templates -->
-    <template id="itemTemplate">
-      <div class="cookie-item" data-index="">
-        <div class="cookie-header">
-          <input type="checkbox" class="item-checkbox" />
-          <div class="cookie-main-info">
-            <div class="cookie-name"></div>
-            <div class="cookie-domain"></div>
+    <!-- Account Item Template -->
+    <template id="accountTemplate">
+      <div class="account-item" data-account="">
+        <div class="account-info">
+          <div class="account-avatar">
+            <span class="account-icon">👤</span>
           </div>
-          <div class="cookie-badges"></div>
-          <div class="cookie-actions">
-            <button class="btn-icon useBtn" title="Apply Cookie">▶️</button>
-            <button class="btn-icon editBtn" title="Edit Cookie">✏️</button>
-            <button class="btn-icon exportBtn" title="Export Cookie">📥</button>
-            <button class="btn-icon deleteBtn" title="Delete Cookie">🗑️</button>
+          <div class="account-details">
+            <div class="account-email"></div>
+            <div class="account-meta">
+              <span class="account-status"></span>
+              <span class="account-expiry"></span>
+              <span class="active-indicator">✓ Active</span>
+            </div>
           </div>
         </div>
-
-        <div class="cookie-details" style="display: none">
-          <div class="detail-grid">
-            <div class="detail-item">
-              <label>Value:</label>
-              <span class="cookie-value"></span>
-            </div>
-            <div class="detail-item">
-              <label>Path:</label>
-              <span class="cookie-path"></span>
-            </div>
-            <div class="detail-item">
-              <label>Expires:</label>
-              <span class="cookie-expires"></span>
-            </div>
-            <div class="detail-item">
-              <label>Same Site:</label>
-              <span class="cookie-samesite"></span>
-            </div>
-          </div>
+        <div class="account-actions">
+          <button class="delete-btn" title="Delete account">🗑️</button>
         </div>
       </div>
     </template>
 
-    <!-- Cookie Editor Modal -->
-    <div id="cookieEditor" class="modal" style="display: none">
+    <!-- Add Account Modal -->
+    <div id="addAccountModal" class="modal" style="display: none">
       <div class="modal-content">
         <div class="modal-header">
-          <h3>Cookie Editor</h3>
-          <button class="modal-close">❌</button>
+          <h3>Add Account</h3>
+          <button class="modal-close" id="closeModal">✕</button>
         </div>
         <div class="modal-body">
-          <form id="cookieEditForm">
-            <div class="form-group">
-              <label>Name:</label>
-              <input type="text" id="editName" required />
-            </div>
-            <div class="form-group">
-              <label>Value:</label>
-              <textarea id="editValue" rows="3"></textarea>
-            </div>
-            <div class="form-group">
-              <label>Domain:</label>
-              <input type="text" id="editDomain" />
-            </div>
-            <div class="form-group">
-              <label>Path:</label>
-              <input type="text" id="editPath" value="/" />
-            </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label>Expires (timestamp):</label>
-                <input type="number" id="editExpires" />
-              </div>
-              <div class="form-group">
-                <label>Same Site:</label>
-                <select id="editSameSite">
-                  <option value="unspecified">Unspecified</option>
-                  <option value="strict">Strict</option>
-                  <option value="lax">Lax</option>
-                  <option value="none">None</option>
-                </select>
-              </div>
-            </div>
-            <div class="form-checkboxes">
-              <label><input type="checkbox" id="editSecure" /> Secure</label>
-              <label
-                ><input type="checkbox" id="editHttpOnly" /> HTTP Only</label
-              >
-              <label><input type="checkbox" id="editSession" /> Session</label>
-              <label
-                ><input type="checkbox" id="editHostOnly" /> Host Only</label
-              >
-            </div>
-          </form>
+          <p>Paste your Cursor account cookies JSON here:</p>
+          <textarea
+            id="cookiesInput"
+            rows="10"
+            placeholder='[{"name": "SessionToken", "value": "...", ...}]'
+          ></textarea>
+          <div class="form-group">
+            <label for="accountNameInput">Account Name (optional):</label>
+            <input
+              type="text"
+              id="accountNameInput"
+              placeholder="Leave empty for auto-generated name"
+            />
+          </div>
         </div>
         <div class="modal-footer">
-          <button id="saveEdit" class="btn btn-primary">Save Changes</button>
-          <button class="modal-cancel btn btn-secondary">Cancel</button>
+          <button id="confirmAddBtn" class="btn btn-primary">
+            Add Account
+          </button>
+          <button id="cancelAddBtn" class="btn btn-secondary">Cancel</button>
         </div>
       </div>
     </div>
 
-    <!-- Hidden inputs -->
-    <input id="jsonInput" type="file" accept=".json" style="display: none" />
-    <input id="csvInput" type="file" accept=".csv" style="display: none" />
-
-    <!-- Log Section -->
-    <div class="log-section">
-      <div class="log-header">
-        <h4>💻 Activity Log</h4>
-        <button id="clearLog" class="btn btn-sm btn-outline">🗑️ Clear</button>
-      </div>
-      <div id="log" class="log-content"></div>
-    </div>
+    <!-- Hidden file inputs -->
+    <input id="fileInput" type="file" accept=".json" style="display: none" />
 
     <script src="popup.js"></script>
   </body>

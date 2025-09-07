@@ -1,9 +1,16 @@
 {
   "manifest_version": 3,
-  "name": "Account Manager",
+  "name": "Cursor Account Manager",
   "version": "1.0",
-  "description": "Manage cookie items (save/import/export/use/extract) — for lab/educational use.",
-  "permissions": ["cookies", "storage", "tabs", "scripting", "activeTab"],
+  "description": "Manage multiple Cursor accounts and switch between them easily",
+  "permissions": [
+    "cookies",
+    "storage",
+    "tabs",
+    "scripting",
+    "activeTab",
+    "downloads"
+  ],
   "host_permissions": ["<all_urls>"],
   "action": {
     "default_popup": "popup.html",
@@ -15,5 +22,13 @@
   },
   "background": {
     "service_worker": "background.js"
-  }
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://*.cursor.com/*", "https://cursor.com/*"],
+      "js": ["content.js"],
+      "css": ["content.css"],
+      "run_at": "document_end"
+    }
+  ]
 }

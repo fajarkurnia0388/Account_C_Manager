@@ -1,0 +1,196 @@
+/* Cursor Account Switcher Styles */
+
+.cursor-account-switcher {
+  position: relative;
+  display: inline-block;
+  margin-left: 12px;
+}
+
+.cas-dropdown-button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cas-dropdown-button:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.cas-account-name {
+  font-weight: 500;
+}
+
+.cas-arrow {
+  font-size: 10px;
+  opacity: 0.7;
+}
+
+.cas-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 8px;
+  min-width: 200px;
+  background: #1a1a1a;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  overflow: hidden;
+}
+
+.cas-current-account {
+  padding: 12px 16px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.cas-current-account .cas-name {
+  color: #fff;
+  font-weight: 500;
+}
+
+.cas-dropdown-menu hr {
+  margin: 0;
+  border: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.cas-account-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.cas-account-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.cas-account-item.active {
+  background: rgba(76, 175, 80, 0.2);
+}
+
+.cas-account-icon {
+  font-size: 16px;
+  width: 20px;
+  text-align: center;
+}
+
+.cas-account-text {
+  flex: 1;
+  font-size: 14px;
+}
+
+.cas-check {
+  color: #4caf50;
+  font-weight: bold;
+}
+
+.cas-add-account {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.cas-add-account:hover {
+  color: #fff;
+  background: rgba(76, 175, 80, 0.2);
+}
+
+/* Notifications */
+.cas-notification {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  padding: 16px 24px;
+  background: #1a1a1a;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: #fff;
+  font-size: 14px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  transition: opacity 0.3s ease;
+  z-index: 10000;
+}
+
+.cas-notification.cas-success {
+  border-color: #4caf50;
+  background: rgba(76, 175, 80, 0.2);
+}
+
+.cas-notification.cas-error {
+  border-color: #f44336;
+  background: rgba(244, 67, 54, 0.2);
+}
+
+/* Dark mode adjustments */
+@media (prefers-color-scheme: light) {
+  .cas-dropdown-button {
+    background: rgba(0, 0, 0, 0.05);
+    border-color: rgba(0, 0, 0, 0.1);
+    color: #333;
+  }
+
+  .cas-dropdown-button:hover {
+    background: rgba(0, 0, 0, 0.08);
+    border-color: rgba(0, 0, 0, 0.2);
+  }
+
+  .cas-dropdown-menu {
+    background: #fff;
+    border-color: rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  .cas-current-account {
+    color: rgba(0, 0, 0, 0.6);
+  }
+
+  .cas-current-account .cas-name {
+    color: #333;
+  }
+
+  .cas-dropdown-menu hr {
+    border-top-color: rgba(0, 0, 0, 0.1);
+  }
+
+  .cas-account-item {
+    color: rgba(0, 0, 0, 0.9);
+  }
+
+  .cas-account-item:hover {
+    background: rgba(0, 0, 0, 0.05);
+  }
+
+  .cas-account-item.active {
+    background: rgba(76, 175, 80, 0.1);
+  }
+
+  .cas-add-account {
+    color: rgba(0, 0, 0, 0.7);
+  }
+
+  .cas-add-account:hover {
+    color: #333;
+    background: rgba(76, 175, 80, 0.1);
+  }
+
+  .cas-notification {
+    background: #fff;
+    border-color: rgba(0, 0, 0, 0.2);
+    color: #333;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+}
+

@@ -1,264 +1,123 @@
-# Account Manager v2.0 🍪
+# Cursor Account Manager
 
-Extension Chrome **canggih** untuk manajemen cookie dengan UI modern dan fitur lengkap untuk menyimpan, mengimpor, mengekspor, mengedit, dan menerapkan cookie dalam format JSON.
+Ekstensi Chrome yang memungkinkan Anda mengelola beberapa akun Cursor dan beralih di antaranya dengan mudah, mirip dengan GitHub Account Switcher.
 
-[Read this README in English](README.md)
+## 🚀 Fitur
 
-## ✨ Fitur Utama
+### Fitur Utama
 
-### 🎯 Core Features
+- **👤 Dukungan Multi-Akun**: Simpan dan kelola akun Cursor tanpa batas
+- **🔄 Perpindahan Sekali Klik**: Klik pada akun untuk langsung beralih
+- **📋 Impor JSON**: Tambah akun dengan paste cookies JSON dari sumber apapun
+- **💾 Ekspor Otomatis**: Semua akun disimpan ke folder Downloads/cursor_accounts/
+- **📧 Deteksi Cerdas**: Otomatis mengambil email dan status langganan
+- **🔐 Penyimpanan Aman**: Cookie disimpan lokal di penyimpanan aman Chrome
 
-- **Extract cookies** dari domain saat ini atau semua tab sekaligus
-- **Apply cookies** ke browser dengan sekali klik
-- **Cookie editor** lengkap dengan modal interface untuk edit individual cookies
-- **Bulk operations** untuk memilih dan mengoperasikan multiple cookies sekaligus
-- **Search & filter** cookies berdasarkan nama, domain, atau nilai dengan real-time
+### Fitur Lanjutan
 
-### 🔍 Advanced Filtering & Search
+- **🌐 Integrasi Halaman**: Dropdown pemilih akun di halaman Cursor.com
+- **🚦 Indikator Visual**: Akun aktif ditampilkan dengan indikator hijau dan badge
+- **📊 Status Akun**: Menampilkan tipe langganan (Free/Pro/Business) dengan kode warna
+- **🌓 Mode Gelap/Terang**: Deteksi tema otomatis dengan toggle manual
+- **🔔 Notifikasi Cerdas**: Umpan balik non-intrusif untuk semua operasi
+- **🎯 Update Cerdas**: Hanya update info akun saat diperlukan
 
-- **Real-time search** dengan highlight di nama, domain, dan nilai
-- **Filter berdasarkan domain** dengan dropdown dinamis
-- **Filter berdasarkan tipe**: Session, Persistent, Secure, HTTP-Only
-- **Multi-criteria sorting**: berdasarkan nama, domain, atau tanggal pembuatan
-- **Clear filters** untuk reset semua filter dengan sekali klik
+## 📋 Cara Kerja
 
-### 📊 UI/UX Modern
+1. **Manajemen Cookie**: Menangkap dan menyimpan cookie sesi Cursor dengan aman
+2. **Deteksi Cerdas**: Otomatis mengambil email dan info paket dari dashboard
+3. **Perpindahan Instan**: Hapus sesi saat ini dan pulihkan cookie akun yang dipilih
+4. **Ekspor Otomatis**: Simpan akun ke Downloads/cursor_accounts/ untuk backup
+5. **Integrasi Halaman**: Injeksi pemilih akun ke Cursor.com untuk akses cepat
 
-- **Dark/Light mode** toggle dengan animasi smooth
-- **Responsive design** dengan gradien dan shadow yang elegan
-- **Statistics bar** real-time (total cookies, selected, domains)
-- **Visual badges** untuk cookie attributes (Secure, HTTP-Only, Session, SameSite)
-- **Loading states** dan progress indicators
-- **Activity log** dengan timestamp untuk tracking semua operasi
-- **Empty states** dengan ilustrasi yang informatif
+## 🛠️ Instalasi
 
-### 📁 Import/Export Advanced
+1. Clone repositori ini atau unduh file ZIP
+2. Buka Chrome dan navigasi ke `chrome://extensions/`
+3. Aktifkan "Mode developer" di pojok kanan atas
+4. Klik "Load unpacked" dan pilih direktori ekstensi
+5. Ikon ekstensi akan muncul di toolbar Chrome Anda
 
-- **Multiple export formats**: JSON dan CSV
-- **Export options fleksibel**:
-  - Selected items only
-  - All items
-  - By Domain (per-domain files)
-  - CSV format untuk analisis data
-- **Smart import** dengan automatic duplicate detection
-- **File validation** untuk memastikan format JSON yang benar
+## 📖 Penggunaan
 
-### 🛠️ Bulk Operations
+### Menambahkan Akun
 
-- **Multi-select** dengan checkboxes
-- **Select all/none** untuk visible items
-- **Bulk apply** - terapkan multiple cookies sekaligus
-- **Bulk export** - export selected cookies dalam satu file
-- **Bulk delete** dengan confirmation dialog
-- **Selection counter** dan visual feedback
+**Metode 1: Impor dari JSON**
 
-### 🛡️ Cookie Management Enhanced
+1. Dapatkan cookies Cursor Anda (misal dari extension Cookie Editor)
+2. Klik ikon ekstensi
+3. Klik "Add Account"
+4. Paste JSON cookies
+5. Opsional berikan nama custom
+6. Akun akan disimpan ke Downloads/cursor_accounts/
 
-- **Duplicate detection** otomatis saat import/extract
-- **Cookie validation** untuk memastikan format yang benar
-- **Real-time stats** untuk monitoring jumlah cookies
-- **Confirmation dialogs** untuk operasi destructive (delete)
-- **Cookie details** expandable dengan informasi lengkap
-- **Metadata tracking** (created, modified, imported timestamps)
+**Metode 2: Ekspor Sesi Saat Ini**
 
-## Cara Instalasi
+1. Login ke akun Cursor Anda
+2. Klik ikon ekstensi
+3. Klik "Export Current"
+4. Akun akan disimpan ke Downloads/cursor_accounts/
 
-1. **Download/Clone** semua file extension ini ke folder lokal
-2. Buka Chrome dan ketik `chrome://extensions` di address bar
-3. Aktifkan **Developer mode** (toggle di pojok kanan atas)
-4. Klik **Load unpacked** dan pilih folder yang berisi file extension ini
-5. Extension akan muncul di toolbar Chrome
+### Beralih Akun
 
-## 🚀 Cara Penggunaan
+1. Klik ikon ekstensi
+2. Cukup klik pada kartu akun untuk beralih
+3. Halaman akan otomatis dimuat ulang dengan akun baru
+4. Akun aktif ditandai dengan indikator "✓ Active"
 
-### 📥 Ekstrak Cookie dari Website
+### Menggunakan Integrasi Halaman
 
-#### Extract Single Domain
+- Cari dropdown pemilih akun di header Cursor.com
+- Klik untuk melihat semua akun tersimpan
+- Beralih langsung dari halaman web
 
-1. Buka website yang ingin diekstrak cookienya
-2. Klik ikon extension di toolbar Chrome
-3. Klik **"Extract Current"** untuk mengambil cookies dari domain saat ini
-4. Cookies akan ditambahkan ke daftar dengan automatic duplicate detection
+### Fitur Manajemen Akun
 
-#### Extract All Tabs
+- **Desain Visual**: UI modern dan bersih dengan kartu akun menampilkan email dan status
+- **Status Berkode Warna**: Free (biru), Pro (ungu), Business (hijau)
+- **Indikator Aktif**: Titik hijau (🟢) menunjukkan akun yang sedang aktif
+- **Klik untuk Beralih**: Cukup klik kartu akun untuk beralih instan
+- **Backup Otomatis**: Semua akun otomatis disimpan ke Downloads/cursor_accounts/
 
-1. Klik **"Extract All Tabs"** untuk mengambil cookies dari semua tab yang terbuka
-2. Extension akan memproses semua domain dari tab yang aktif
-3. Progress akan ditampilkan di activity log
+## 🔧 Detail Teknis
 
-### 🎯 Menerapkan Cookie ke Website
+### Izin yang Diperlukan
 
-#### Single Cookie
+- `cookies`: Untuk membaca dan mengelola cookie Cursor.com
+- `storage`: Untuk menyimpan data akun secara lokal
+- `tabs`: Untuk memuat ulang tab setelah beralih
+- `scripting` & `activeTab`: Untuk fungsionalitas content script
+- `downloads`: Untuk menyimpan akun ke folder Downloads
+- Izin host untuk semua URL (untuk manajemen cookie)
 
-1. Cari cookie yang ingin diterapkan menggunakan search box
-2. Klik ikon **Play (▶️)** pada cookie item
-3. Cookie akan di-set di browser untuk domain yang sesuai
-4. Status akan muncul di activity log
+### Penyimpanan Data
 
-#### Bulk Apply
+- Akun disimpan di penyimpanan lokal Chrome
+- Setiap akun mencakup:
+  - Alamat email
+  - Status langganan (Free/Pro/Business)
+  - Cookie sesi
+  - Nama otomatis atau custom
+- Backup otomatis ke Downloads/cursor_accounts/
 
-1. Pilih multiple cookies menggunakan checkbox
-2. Klik **"Apply All"** di bulk actions bar
-3. Semua selected cookies akan diterapkan sekaligus
+### Keamanan
 
-### 🔍 Search & Filter Cookies
+- Cookie hanya diakses untuk domain cursor.com
+- Tidak ada data yang dikirim ke server eksternal
+- Semua penyimpanan lokal di browser Anda
 
-#### Real-time Search
+## 🤝 Kontribusi
 
-- Gunakan search box untuk mencari berdasarkan:
-  - Nama cookie
-  - Domain
-  - Nilai cookie
-- Hasil ditampilkan secara real-time
+Kontribusi sangat diterima! Silakan kirim Pull Request.
 
-#### Advanced Filtering
+## 📄 Lisensi
 
-- **Domain Filter**: Dropdown dengan semua domain yang tersedia
-- **Type Filter**: Session, Persistent, Secure, HTTP-Only
-- **Sort**: Klik tombol Sort untuk cycling through sort options
-- **Clear Filters**: Reset semua filter dengan satu klik
-
-### ✏️ Edit Cookie Individual
-
-1. Klik ikon **Edit (✏️)** pada cookie item
-2. Modal editor akan terbuka dengan semua field:
-   - Name, Value, Domain, Path
-   - Expiration Date, Same Site setting
-   - Checkboxes: Secure, HTTP-Only, Session, Host-Only
-3. Klik **"Save Changes"** untuk menyimpan
+Proyek ini dilisensikan di bawah Lisensi MIT.
 
-### 📁 Import/Export Advanced
+## 🙏 Penghargaan
 
-#### Import Options
+Terinspirasi oleh GitHub Account Switcher dan ekstensi manajemen akun lainnya.
 
-- **JSON Import**: Support single object atau array of objects
-- **Automatic Duplicate Detection**: Skip cookies yang sudah ada
-- **File Validation**: Validasi format sebelum import
+---
 
-#### Export Options
-
-- **Selected Items**: Export cookies yang dipilih saja
-- **All Items**: Export semua cookies
-- **By Domain**: Export terpisah per domain
-- **CSV Format**: Export dalam format CSV untuk analisis data
-
-### 🛠️ Bulk Operations
-
-1. **Select Items**: Klik checkbox pada cookies yang ingin dioperasikan
-2. **Select All**: Klik "Select All" untuk memilih semua visible items
-3. **Bulk Actions** (muncul ketika ada selection):
-   - **Apply All**: Terapkan semua selected cookies
-   - **Export**: Export selected cookies ke file
-   - **Delete**: Hapus selected cookies (dengan confirmation)
-   - **Clear Selection**: Batalkan semua seleksi
-
-## Format JSON Cookie
-
-Contoh format cookie yang digunakan:
-
-```json
-{
-  "domain": "example.com",
-  "expirationDate": 1762401571.001188,
-  "hostOnly": true,
-  "httpOnly": true,
-  "name": "session_token",
-  "path": "/",
-  "sameSite": "lax",
-  "secure": true,
-  "session": false,
-  "storeId": null,
-  "value": "abc123xyz"
-}
-```
-
-## 🎨 Fitur UI/UX Tambahan
-
-### 🌙 Dark Mode
-
-- Toggle dark/light mode di header
-- Automatic icon update (moon/sun)
-- Smooth color transitions
-- Settings tersimpan otomatis
-
-### 📊 Real-time Statistics
-
-- **Total Count**: Jumlah total cookies yang tersimpan
-- **Selected Count**: Jumlah cookies yang dipilih
-- **Domains Count**: Jumlah domain unik
-- Update otomatis saat ada perubahan
-
-### 🏷️ Visual Badges
-
-Setiap cookie menampilkan badges untuk attributes:
-
-- **🔒 Secure**: Cookie secure only
-- **🌐 HTTP**: HTTP-Only cookies
-- **⏱️ Session**: Session cookies
-- **🔗 SameSite**: SameSite policy (Strict/Lax/None)
-
-### 📱 Responsive Design
-
-- **Width**: 480px untuk kenyamanan viewing
-- **Scrollable sections** untuk handling data besar
-- **Smooth animations** dan transitions
-- **Loading overlays** untuk feedback visual
-
-## 📁 File Structure v2.0
-
-```
-cookie-manager-gem-v2/
-├── manifest.json          # Extension config (Manifest V3)
-├── popup.html             # Modern UI with modal & components
-├── popup.js               # Advanced JavaScript class-based architecture
-├── style.css              # Modern CSS with variables & animations
-├── background.js          # Minimal service worker
-├── icons/                 # Extension icons
-│   └── icon64.png
-├── README.md              # Documentation (Bahasa Indonesia)
-└── README_EN.md           # Documentation (English)
-```
-
-## 🔧 Technical Improvements
-
-### Architecture
-
-- **Class-based JavaScript**: Menggunakan ES6 Classes untuk better organization
-- **Event-driven design**: Efficient event handling dan memory management
-- **Modular CSS**: CSS variables untuk theming dan maintainability
-- **Async/await**: Modern JavaScript untuk better promise handling
-
-### Performance
-
-- **Efficient rendering**: Virtual scrolling untuk large datasets
-- **Debounced search**: Optimized search dengan debouncing
-- **Memory management**: Proper cleanup dan garbage collection
-- **Lazy loading**: Components loaded on demand
-
-### Data Management
-
-- **Smart caching**: Efficient storage dan retrieval
-- **Data validation**: Input validation pada semua forms
-- **Error handling**: Comprehensive error handling dengan user feedback
-- **State management**: Centralized state untuk consistency
-
-## Catatan Penting
-
-⚠️ **Peringatan Etika & Keamanan**:
-
-- Gunakan extension ini hanya untuk tujuan **edukasi/pengujian** di lab (VM/CTF/sandbox)
-- Hanya gunakan pada domain yang kamu **miliki atau memiliki izin**
-- Menyuntikkan cookie pada domain pihak ketiga tanpa izin bisa melanggar hukum
-
-## Keterbatasan Teknis
-
-- `chrome.cookies.set` membutuhkan parameter `url` - kode membangun URL dari `domain` dan `path`
-- `hostOnly` tidak dapat diset langsung; untuk membuat host-only, properti `domain` dihilangkan
-- `sameSite` mapping tergantung dukungan browser
-- Cookie `secure` memerlukan HTTPS
-- Format `expirationDate` dalam UNIX timestamp (seconds)
-
-## Lisensi
-
-Untuk tujuan edukasi dan pengujian. Gunakan dengan bertanggung jawab.
-}
+**Catatan**: Ekstensi ini tidak berafiliasi dengan Cursor. Gunakan dengan risiko Anda sendiri.
