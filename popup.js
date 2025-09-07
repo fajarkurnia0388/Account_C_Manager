@@ -261,10 +261,51 @@ class CursorAccountManager {
     document.getElementById("cookiesInput").value = "";
     document.getElementById("accountNameInput").value = "";
     document.getElementById("cookiesInput").focus();
+    
+    // Clear any existing duplicate warnings
+    const existingWarning = document.querySelector('.duplicate-warning');
+    if (existingWarning) {
+      existingWarning.remove();
+    }
   }
 
   hideModal() {
     document.getElementById("addAccountModal").style.display = "none";
+    // Clear any duplicate warnings
+    const existingWarning = document.querySelector('.duplicate-warning');
+    if (existingWarning) {
+      existingWarning.remove();
+    }
+  }
+
+  // Show duplicate account warning inside modal
+  showDuplicateWarning(existingAccount) {
+    // Remove any existing warning
+    const existingWarning = document.querySelector('.duplicate-warning');
+    if (existingWarning) {
+      existingWarning.remove();
+    }
+
+    // Create warning element
+    const warning = document.createElement('div');
+    warning.className = 'duplicate-warning';
+    warning.style.cssText = `
+      background: #fee2e2;
+      border: 1px solid #fca5a5;
+      border-radius: 6px;
+      padding: 12px;
+      margin: 12px 0;
+      color: #dc2626;
+      font-size: 14px;
+    `;
+    warning.innerHTML = `
+      <strong>⚠️ Account Already Exists</strong><br>
+      This account is already saved as: <strong>${existingAccount.email || existingAccount.name}</strong>
+    `;
+
+    // Insert warning after the textarea
+    const textarea = document.getElementById("cookiesInput");
+    textarea.parentNode.insertBefore(warning, textarea.nextSibling);
   }
 
   // Check if account already exists by comparing session tokens
@@ -311,12 +352,7 @@ class CursorAccountManager {
       // Check if account already exists by comparing cookies
       const existingAccount = await this.findExistingAccount(cookiesData);
       if (existingAccount) {
-        this.showNotification(
-          `Account already exists: ${
-            existingAccount.email || existingAccount.name
-          }`,
-          "error"
-        );
+        this.showDuplicateWarning(existingAccount);
         return;
       }
 
@@ -387,7 +423,11 @@ class CursorAccountManager {
         if (response.success) {
           this.showNotification(`Switching to ${accountName}...`, "success");
           // Close popup and let background script handle redirect
-          setTimeout(() => window.close(), 500);
+          setTimeout(() => {
+            window.close();
+            // Check if switch was successful after a delay
+            setTimeout(() => this.checkSwitchSuccess(accountName), 3000);
+          }, 500);
         } else {
           this.showNotification(
             response.error || "Failed to switch account",
@@ -400,6 +440,118 @@ class CursorAccountManager {
       } finally {
         this.showLoading(false);
       }
+    }
+  }
+
+  // Check if account switch was successful
+  async checkSwitchSuccess(expectedAccount) {
+    try {
+      // Check if switch was successful
+      const response = await chrome.runtime.sendMessage({
+        type: "checkSwitchSuccess",
+        expectedAccount: expectedAccount,
+      });
+
+      if (response.success && !response.switchSuccessful) {
+        // Show warning modal
+        this.showSwitchFailureWarning(expectedAccount, response.currentActive);
+      }
+    } catch (error) {
+      console.log("Could not verify switch success:", error);
+    }
+  }
+
+  // Show warning modal for failed switch
+  showSwitchFailureWarning(expectedAccount, currentAccount) {
+    const modal = document.createElement("div");
+    modal.className = "modal";
+    modal.style.display = "block";
+
+    const currentAccountText = currentAccount
+      ? `Still logged in as: <strong>${currentAccount}</strong>`
+      : "No active account detected";
+
+    modal.innerHTML = `
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>⚠️ Account Switch Issue</h3>
+        </div>
+        <div class="modal-body">
+          <p>Failed to switch to: <strong>${expectedAccount}</strong></p>
+          <p>${currentAccountText}</p>
+          <br>
+          <p><strong>This usually happens when browser cookies conflict.</strong></p>
+          <p>To fix this issue:</p>
+          <ol>
+            <li>Clear your browser data (cookies and cache)</li>
+            <li>Try switching accounts again</li>
+          </ol>
+          <p>Click the button below to open your browser's clear data settings:</p>
+        </div>
+        <div class="modal-footer">
+          <button id="clearDataBtn" class="btn btn-primary">🧹 Clear Browser Data</button>
+          <button id="dismissWarningBtn" class="btn btn-secondary">Dismiss</button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    // Event listeners
+    modal.querySelector("#clearDataBtn").addEventListener("click", () => {
+      this.openClearBrowserData();
+      document.body.removeChild(modal);
+    });
+
+    modal.querySelector("#dismissWarningBtn").addEventListener("click", () => {
+      document.body.removeChild(modal);
+    });
+
+    // Close on background click
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) {
+        document.body.removeChild(modal);
+      }
+    });
+  }
+
+  // Open browser's clear data settings
+  async openClearBrowserData() {
+    try {
+      // Detect browser and open appropriate settings
+      const userAgent = navigator.userAgent.toLowerCase();
+      let settingsUrl;
+
+      if (userAgent.includes("edg/")) {
+        // Microsoft Edge
+        settingsUrl = "edge://settings/clearBrowserData";
+      } else if (userAgent.includes("brave/")) {
+        // Brave Browser
+        settingsUrl = "brave://settings/clearBrowserData";
+      } else if (userAgent.includes("opr/") || userAgent.includes("opera/")) {
+        // Opera
+        settingsUrl = "opera://settings/clearBrowserData";
+      } else if (userAgent.includes("chrome/")) {
+        // Chrome or Chromium-based
+        settingsUrl = "chrome://settings/clearBrowserData";
+      } else {
+        // Fallback to Chrome
+        settingsUrl = "chrome://settings/clearBrowserData";
+      }
+
+      // Open in new tab
+      chrome.tabs.create({ url: settingsUrl });
+
+      this.showNotification(
+        "Opening browser settings. Clear cookies and cache, then try again.",
+        "info"
+      );
+    } catch (error) {
+      console.error("Error opening clear data settings:", error);
+      this.showNotification(
+        "Please manually go to your browser settings and clear cookies/cache",
+        "error"
+      );
     }
   }
 

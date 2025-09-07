@@ -80,6 +80,8 @@ Ekstensi Chrome yang memungkinkan Anda mengelola beberapa akun Cursor dan berali
 - **Backup Otomatis**: Semua akun otomatis disimpan ke Downloads/cursor_accounts/
 - **Deteksi Duplikat**: Mencegah penambahan akun yang sama dua kali
 - **Redirect Dashboard**: Otomatis redirect ke cursor.com/dashboard setelah beralih
+- **Deteksi Kegagalan Switch**: Peringatan ketika perpindahan akun gagal karena konflik cookie
+- **Pembersih Data Browser**: Akses satu-klik ke pengaturan clear data browser (mendukung Chrome, Edge, Brave, Opera)
 
 ## 🔧 Detail Teknis
 

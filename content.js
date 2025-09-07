@@ -274,6 +274,8 @@
         // Redirect to dashboard after successful switch
         setTimeout(() => {
           window.location.href = "https://cursor.com/dashboard";
+          // Check if switch was successful after redirect
+          setTimeout(() => checkSwitchSuccess(accountName), 3000);
         }, 1000);
       } else {
         showNotification(`Failed to switch: ${response.error}`, "error");
@@ -281,6 +283,138 @@
     } catch (error) {
       showNotification(`Error: ${error.message}`, "error");
     }
+  }
+
+  // Check if account switch was successful
+  async function checkSwitchSuccess(expectedAccount) {
+    try {
+      const response = await chrome.runtime.sendMessage({
+        type: "checkSwitchSuccess",
+        expectedAccount: expectedAccount,
+      });
+
+      if (response.success && !response.switchSuccessful) {
+        showSwitchFailureWarning(expectedAccount, response.currentActive);
+      }
+    } catch (error) {
+      console.log("Could not verify switch success:", error);
+    }
+  }
+
+  // Show warning for failed switch
+  function showSwitchFailureWarning(expectedAccount, currentAccount) {
+    const currentAccountText = currentAccount
+      ? `Still logged in as: ${currentAccount}`
+      : "No active account detected";
+
+    const warningDiv = createElement(
+      "div",
+      {
+        className: "cas-switch-warning",
+        style: `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #ff6b6b;
+        color: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        z-index: 10000;
+        max-width: 400px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      `,
+      },
+      [
+        createElement(
+          "h4",
+          { style: "margin: 0 0 10px 0;" },
+          "⚠️ Account Switch Failed"
+        ),
+        createElement(
+          "p",
+          { style: "margin: 5px 0;" },
+          `Failed to switch to: ${expectedAccount}`
+        ),
+        createElement("p", { style: "margin: 5px 0;" }, currentAccountText),
+        createElement(
+          "p",
+          { style: "margin: 10px 0; font-size: 14px;" },
+          "Browser cookies may be conflicting. Clear browser data and try again."
+        ),
+        createElement("div", { style: "margin-top: 15px;" }, [
+          createElement(
+            "button",
+            {
+              style: `
+            background: white;
+            color: #ff6b6b;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+            font-weight: 500;
+          `,
+              onClick: () => {
+                openClearBrowserData();
+                document.body.removeChild(warningDiv);
+              },
+            },
+            "🧹 Clear Browser Data"
+          ),
+          createElement(
+            "button",
+            {
+              style: `
+            background: transparent;
+            color: white;
+            border: 1px solid white;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+          `,
+              onClick: () => document.body.removeChild(warningDiv),
+            },
+            "Dismiss"
+          ),
+        ]),
+      ]
+    );
+
+    document.body.appendChild(warningDiv);
+
+    // Auto remove after 10 seconds
+    setTimeout(() => {
+      if (document.body.contains(warningDiv)) {
+        document.body.removeChild(warningDiv);
+      }
+    }, 10000);
+  }
+
+  // Open browser's clear data settings
+  function openClearBrowserData() {
+    const userAgent = navigator.userAgent.toLowerCase();
+    let settingsUrl;
+
+    if (userAgent.includes("edg/")) {
+      settingsUrl = "edge://settings/clearBrowserData";
+    } else if (userAgent.includes("brave/")) {
+      settingsUrl = "brave://settings/clearBrowserData";
+    } else if (userAgent.includes("opr/") || userAgent.includes("opera/")) {
+      settingsUrl = "opera://settings/clearBrowserData";
+    } else if (userAgent.includes("chrome/")) {
+      settingsUrl = "chrome://settings/clearBrowserData";
+    } else {
+      settingsUrl = "chrome://settings/clearBrowserData";
+    }
+
+    // Open in new tab
+    window.open(settingsUrl, "_blank");
+    showNotification(
+      "Opening browser settings. Clear cookies and cache, then try again.",
+      "info"
+    );
   }
 
   // Show notification

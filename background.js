@@ -80,6 +80,17 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           sendResponse({ success: true });
           break;
 
+        case "checkSwitchSuccess":
+          // Verify if the account switch was successful
+          const currentActive = await accountService.getActiveAccount();
+          const expectedAccount = request.expectedAccount;
+          sendResponse({
+            success: true,
+            switchSuccessful: currentActive === expectedAccount,
+            currentActive: currentActive,
+          });
+          break;
+
         case "importAccountJSON":
           const accountName = await accountService.importAccountFromJSON(
             request.jsonText,

@@ -543,6 +543,8 @@ body {
   display: flex;
   gap: 8px;
   align-items: center;
+  position: relative;
+  z-index: 2;
 }
 
 .delete-btn {
@@ -563,6 +565,16 @@ body {
 
 .active-indicator {
   display: none;
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: var(--success-color);
+  color: white;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 12px;
+  font-weight: 600;
+  z-index: 1;
 }
 
 .account-item.active .account-expiry {
@@ -570,10 +582,11 @@ body {
 }
 
 .account-item.active .active-indicator {
-  display: inline;
-  color: var(--success-color);
-  font-weight: 600;
-  margin-left: 8px;
+  display: block;
+}
+
+.account-item {
+  position: relative;
 }
 
 .account-item.active .account-icon {
@@ -685,4 +698,21 @@ body {
   justify-content: flex-end;
   padding: 16px 20px;
   border-top: 1px solid var(--border-color);
+}
+
+/* Duplicate warning styles */
+.duplicate-warning {
+  background: #fee2e2;
+  border: 1px solid #fca5a5;
+  border-radius: 6px;
+  padding: 12px;
+  margin: 12px 0;
+  color: #dc2626;
+  font-size: 14px;
+}
+
+.dark-mode .duplicate-warning {
+  background: #7f1d1d;
+  border-color: #dc2626;
+  color: #fca5a5;
 }
