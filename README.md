@@ -116,7 +116,7 @@ This project is licensed under the MIT License.
 
 ## 🙏 Acknowledgments
 
-Inspired by GitHub Account Switcher and other account management extensions.
+Inspired by [GitHub Account Switcher](https://github.com/yuezk/github-account-switcher) and [Cookie Editor](https://github.com/Moustachauve/cookie-editor) extensions.
 
 ---
 

@@ -116,7 +116,7 @@ Proyek ini dilisensikan di bawah Lisensi MIT.
 
 ## 🙏 Penghargaan
 
-Terinspirasi oleh GitHub Account Switcher dan ekstensi manajemen akun lainnya.
+Terinspirasi oleh ekstensi [GitHub Account Switcher](https://github.com/yuezk/github-account-switcher) dan [Cookie Editor](https://github.com/Moustachauve/cookie-editor).
 
 ---
 
