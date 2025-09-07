@@ -15,10 +15,15 @@ class CookieManager {
   }
 
   async init() {
-    await this.loadSettings();
-    await this.loadItems();
-    this.bindEvents();
-    this.updateUI();
+    try {
+      await this.loadSettings();
+      await this.loadItems();
+      this.bindEvents();
+      this.updateUI();
+    } catch (error) {
+      console.error("Error during initialization:", error);
+      throw error;
+    }
   }
 
   // Settings & Theme Management
@@ -187,20 +192,36 @@ class CookieManager {
     });
   }
 
-  // UI Updates
+  // UI Updates with debouncing to prevent constant reflow
   updateUI() {
-    this.renderItems();
-    this.updateStats();
-    this.updateFilters();
-    this.updateBulkActions();
+    if (this._isUpdating) return;
+    this._isUpdating = true;
+
+    requestAnimationFrame(() => {
+      this.renderItems();
+      this.updateStats();
+      this.updateFilters();
+      this.updateBulkActions();
+      this._isUpdating = false;
+    });
   }
 
   updateStats() {
     const domains = [...new Set(this.items.map((item) => item.domain))];
-    document.getElementById("totalCount").textContent = this.items.length;
-    document.getElementById("selectedCount").textContent =
-      this.selectedItems.size;
-    document.getElementById("domainsCount").textContent = domains.length;
+    const totalEl = document.getElementById("totalCount");
+    const selectedEl = document.getElementById("selectedCount");
+    const domainsEl = document.getElementById("domainsCount");
+
+    // Only update if values have changed to prevent unnecessary reflow
+    if (totalEl.textContent !== this.items.length.toString()) {
+      totalEl.textContent = this.items.length;
+    }
+    if (selectedEl.textContent !== this.selectedItems.size.toString()) {
+      selectedEl.textContent = this.selectedItems.size;
+    }
+    if (domainsEl.textContent !== domains.length.toString()) {
+      domainsEl.textContent = domains.length;
+    }
   }
 
   updateFilters() {
@@ -297,24 +318,34 @@ class CookieManager {
 
   // Rendering
   renderItems() {
+    if (this._isRendering) return;
+    this._isRendering = true;
+
     const container = document.getElementById("itemsList");
     const emptyState = document.getElementById("emptyState");
 
     if (this.filteredItems.length === 0) {
       container.style.display = "none";
       emptyState.style.display = "block";
+      this._isRendering = false;
       return;
     }
 
     container.style.display = "block";
     emptyState.style.display = "none";
-    container.innerHTML = "";
+
+    // Use DocumentFragment to minimize reflows
+    const fragment = document.createDocumentFragment();
 
     this.filteredItems.forEach((item, index) => {
       const originalIndex = this.items.indexOf(item);
       const element = this.createItemElement(item, originalIndex);
-      container.appendChild(element);
+      fragment.appendChild(element);
     });
+
+    container.innerHTML = "";
+    container.appendChild(fragment);
+    this._isRendering = false;
   }
 
   createItemElement(item, index) {
@@ -430,7 +461,19 @@ class CookieManager {
     }
     this.updateBulkActions();
     this.updateStats();
-    this.renderItems(); // Re-render to update selection styling
+    // Don't re-render items, just update selection styling
+    this.updateSelectionStyling();
+  }
+
+  updateSelectionStyling() {
+    document.querySelectorAll(".cookie-item").forEach((item, idx) => {
+      const itemIndex = parseInt(item.dataset.index);
+      if (this.selectedItems.has(itemIndex)) {
+        item.classList.add("selected");
+      } else {
+        item.classList.remove("selected");
+      }
+    });
   }
 
   toggleSelectAll() {
@@ -449,14 +492,14 @@ class CookieManager {
 
     this.updateBulkActions();
     this.updateStats();
-    this.renderItems();
+    this.updateSelectionStyling();
   }
 
   clearSelection() {
     this.selectedItems.clear();
     this.updateBulkActions();
     this.updateStats();
-    this.renderItems();
+    this.updateSelectionStyling();
   }
 
   // Cookie operations
@@ -970,5 +1013,9 @@ class CookieManager {
 
 // Initialize the application
 document.addEventListener("DOMContentLoaded", () => {
-  new CookieManager();
+  try {
+    new CookieManager();
+  } catch (error) {
+    console.error("Failed to initialize Cookie Manager:", error);
+  }
 });

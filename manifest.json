@@ -3,12 +3,14 @@
   "name": "Account Manager",
   "version": "1.0",
   "description": "Manage cookie items (save/import/export/use/extract) — for lab/educational use.",
-  "permissions": ["cookies", "storage", "tabs", "scripting"],
+  "permissions": ["cookies", "storage", "tabs", "scripting", "activeTab"],
   "host_permissions": ["<all_urls>"],
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
-      "64": "icons/icon64.png"
+      "16": "icons/icon64.png",
+      "48": "icons/icon64.png",
+      "128": "icons/icon64.png"
     }
   },
   "background": {
